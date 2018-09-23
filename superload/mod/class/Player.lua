@@ -276,7 +276,7 @@ local function getLowestHealthEnemy(enemySet)
     return target
 end
 
-local function skoobot_act()
+local function skoobot_act(noAction)
 -- THIS FUNCTION CAUSES THE AI TO MAKE A SINGLE DECISION AND ACT UPON IT
 -- IT CALLS ITSELF RECURSIVELY TO PROCEED TO THE NEXT ACTION
     local hostiles = spotHostiles(game.player, true)
@@ -287,13 +287,15 @@ local function skoobot_act()
         _M.skoobot_ai_state = SAI_STATE_FIGHT
     end
 	
-	_M.skoobot_ai_deltalife = game.player.life - _M.skoobot_ai_lastlife
-	_M.skoobot_ai_lastlife = game.player.life
-	if(abs(_M.skoobot_ai_deltalife) > 0) then
-		print("[Skoobot] Delta detected! = ".._M.skoobot_ai_deltalife)
-	end
-	if (_M.skoobot_ai_deltalife > 0) and (game.player.max_life / _M.skoobot_ai_deltalife < 4) then
-		return aiStop("#RED#AI Stopped: Lost more than 25% life in one turn!")
+	if noAction ~= nil and not noAction then
+		_M.skoobot_ai_deltalife = game.player.life - _M.skoobot_ai_lastlife
+		_M.skoobot_ai_lastlife = game.player.life
+		if(abs(_M.skoobot_ai_deltalife) > 0) then
+			print("[Skoobot] Delta detected! = ".._M.skoobot_ai_deltalife)
+		end
+		if (_M.skoobot_ai_deltalife > 0) and (game.player.max_life / _M.skoobot_ai_deltalife < 4) then
+			return aiStop("#RED#AI Stopped: Lost more than 25% life in one turn!")
+		end
 	end
     
     activateSustained()
@@ -319,7 +321,7 @@ local function skoobot_act()
     elseif _M.skoobot_ai_state == SAI_STATE_EXPLORE then
         if game.player.air < 75 then
             _M.skoobot_ai_state = SAI_STATE_REST
-            return skoobot_act()
+            return skoobot_act(true)
         end
         game.player:autoExplore()
         -- NOTE: Due to execution order, this may actually be checking the start tile
@@ -335,7 +337,7 @@ local function skoobot_act()
         
         -- for now:
         _M.skoobot_ai_state = SAI_STATE_EXPLORE
-        return skoobot_act()
+        return skoobot_act(true)
     
     elseif _M.skoobot_ai_state == SAI_STATE_FIGHT then
         local targets = {}
@@ -371,7 +373,7 @@ local function skoobot_act()
 		    -- no enemies left in sight! fight's over
 		    -- TODO OR WE'RE BLIND!!!!!!! this edge case will likely resolve itself once HUNT works.
 		    _M.skoobot_ai_state = SAI_STATE_REST
-		    return skoobot_act()
+		    return skoobot_act(true)
 		end
 		
 		-- for now just end the ai if we have nothing usable, will diagnose as this occurs
@@ -413,7 +415,7 @@ function _M:skoobot_start()
     _M.ai_active = true
 	_M.skoobot_ai_lastlife = game.player.life
     
-    skoobot_act()
+    skoobot_act(true)
 end
 
 local old_act = _M.act
