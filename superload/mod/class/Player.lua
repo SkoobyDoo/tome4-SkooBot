@@ -287,7 +287,10 @@ local function skoobot_act(noAction)
         _M.skoobot_ai_state = SAI_STATE_FIGHT
     end
 	
-	if noAction ~= nil and not noAction then
+	print("[Skoobot] Current Life = "..game.player.life)
+	print("[Skoobot] Last Life = ".._M.skoobot_ai_lastlife)
+	if not noAction then
+		print("[Skoobot] Evaluating life change...")
 		_M.skoobot_ai_deltalife = game.player.life - _M.skoobot_ai_lastlife
 		_M.skoobot_ai_lastlife = game.player.life
 		if(abs(_M.skoobot_ai_deltalife) > 0) then
@@ -428,11 +431,13 @@ function _M:act()
         end
         _M.skoobot_aiTurnCount = _M.skoobot_aiTurnCount + 1
         game.player.AI_talentfailed = {}
+		print("[Skoobot] Player Act Number ".._M.skoobot_aiTurnCount)
         skoobot_act()
         game.player.AI_talentfailed = {}
     end
-    if _M.skoobot_aiTurnCount > 1000 then
-        aiStop("#LIGHT_RED#AI Disabled. AI acted for 1000 turns. Did it get stuck?")
+    if _M.skoobot_aiTurnCount > 10 then
+		aiStop("Ai ran for 10 turns. Remember to disable this for real runs")
+        --aiStop("#LIGHT_RED#AI Disabled. AI acted for 1000 turns. Did it get stuck?")
     end
     return ret
 end
