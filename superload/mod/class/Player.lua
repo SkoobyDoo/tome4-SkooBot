@@ -178,7 +178,7 @@ local function getAvailableTalents(target, talentsToUse)
 	    target_dist = core.fov.distance(game.player.x, game.player.y, tx, ty)
 	end
 	if(talentsToUse ~= nil) then
-		print("getting available talents with these to use:")
+		print("[Skoobot] getting available talents with these to use:")
 		table.print(talentsToUse)
 	end
 	local theseTalents = talentsToUse or game.player.talents
@@ -289,8 +289,8 @@ local function skoobot_act()
 	
 	_M.skoobot_ai_deltalife = game.player.life - _M.skoobot_ai_lastlife
 	_M.skoobot_ai_lastlife = game.player.life
-	if(abs(_M.skoobot_ai_deltalife) > 20) then
-		print("Large delta detected! = ".._M.skoobot_ai_deltalife)
+	if(abs(_M.skoobot_ai_deltalife) > 0) then
+		print("[Skoobot] Delta detected! = ".._M.skoobot_ai_deltalife)
 	end
 	if (_M.skoobot_ai_deltalife > 0) and (game.player.max_life / _M.skoobot_ai_deltalife < 4) then
 		return aiStop("#RED#AI Stopped: Lost more than 25% life in one turn!")
@@ -352,7 +352,7 @@ local function skoobot_act()
         -- the AI is dumb and doesn't understand how powers work, so pick one at random!
         if target ~= nil then
             local talents = getAvailableTalents(target, getCombatTalents())
-			print("Talents ready to go:")
+			print("[Skoobot] Talents ready to go:")
 			table.print(talents)
             talents = filterFailedTalents(talents)
 	    	local tid = talents[rng.range(1, #talents)]
