@@ -60,7 +60,7 @@ local function aiStop(msg)
     _M.ai_active = false
     _M.skoobot_ai_state = SAI_STATE_REST
     _M.skoobot_aiTurnCount = 0
-    if msg then game.log(msg) else game.log("#LIGHT_RED#AI Stopping!") end
+    game.log((msg ~= nil and msg) or "#LIGHT_RED#AI Stopping!")
 end
 
 local function getDirNum(src, dst)
@@ -303,7 +303,8 @@ local function skoobot_act(noAction)
 			print("[Skoobot] [Survival] Delta detected! = ".._M.skoobot_ai_deltalife)
 		end
 		if (_M.skoobot_ai_deltalife < 0) and ( abs(_M.skoobot_ai_deltalife) / game.player.max_life >= SAI_LOWHEALTH_RATIO / 2) then
-			return aiStop("#RED#[Skoobot] [Survival] AI Stopped: Lost more than "..math.floor(100*SAI_LOWHEALTH_RATIO/2).."% life in one turn!")
+			print("#RED#[Skoobot] [Survival] AI Stopped: Lost more than "..math.floor(100*SAI_LOWHEALTH_RATIO/2).."% life in one turn!")
+			return aiStop("AI Stopped: Lost more than "..math.floor(100*SAI_LOWHEALTH_RATIO/2).."%% life in one turn!")
 		end
 	end
     
