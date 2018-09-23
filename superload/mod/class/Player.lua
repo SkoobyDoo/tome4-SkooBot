@@ -37,7 +37,7 @@ local SAI_STATE_FIGHT = 13
 _M.skoobot_ai_state = SAI_STATE_REST
 _M.skoobot_aiTurnCount = 0
 
-local SAI_LOWHEALTH_RATIO = 0.02
+local SAI_LOWHEALTH_RATIO = 0.50
 
 _M.AI_talentfailed = {}
 
@@ -238,7 +238,7 @@ local function lowHealth(enemy)
         if enemy ~= nil then
             local dir = game.level.map:compassDirection(enemy.x - game.player.x, enemy.y - game.player.y)
             local name = enemy.name
-		    return true, ("#RED#AI cancelled for low health while hostile spotted to the %s (%s%s)"):format(dir or "???", name, game.level.map:isOnScreen(enemy.x, enemy.y) and "" or " - offscreen")
+		    return true, ("#RED#AI cancelled for low health while hostile spotted to the %s (%s%s)"):format(dir ~= nil and dir or "???", name, game.level.map:isOnScreen(enemy.x, enemy.y) and "" or " - offscreen")
 		else
 		    return true, "#RED#AI cancelled for low health"
 		end
