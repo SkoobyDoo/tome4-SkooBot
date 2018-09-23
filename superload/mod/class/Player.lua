@@ -37,6 +37,8 @@ local SAI_STATE_FIGHT = 13
 _M.skoobot_ai_state = SAI_STATE_REST
 _M.skoobot_aiTurnCount = 0
 
+local SAI_LOWHEALTH_RATIO = 0.02
+
 _M.AI_talentfailed = {}
 
 -------------------------------------------------------
@@ -232,7 +234,7 @@ end
 
 local function lowHealth(enemy)
     -- TODO make threshold configurable
-    if game.player.life < game.player.max_life/4 then
+    if game.player.life < game.player.max_life * SAI_LOWHEALTH_RATIO then
         if enemy ~= nil then
             local dir = game.level.map:compassDirection(enemy.x - game.player.x, enemy.y - game.player.y)
             local name = enemy.name
@@ -300,8 +302,8 @@ local function skoobot_act(noAction)
 		if(abs(_M.skoobot_ai_deltalife) > 0) then
 			print("[Skoobot] [Survival] Delta detected! = ".._M.skoobot_ai_deltalife)
 		end
-		if (_M.skoobot_ai_deltalife < 0) and (game.player.max_life / abs(_M.skoobot_ai_deltalife) < 4) then
-			return aiStop("#RED#[Skoobot] [Survival] AI Stopped: Lost more than 25% life in one turn!")
+		if (_M.skoobot_ai_deltalife < 0) and ( abs(_M.skoobot_ai_deltalife) / game.player.max_life >= SAI_LOWHEALTH_RATIO / 2) then
+			return aiStop("#RED#[Skoobot] [Survival] AI Stopped: Lost more than "..math.floor(100*SAI_LOWHEALTH_RATIO/2).."% life in one turn!")
 		end
 	end
     
@@ -389,7 +391,7 @@ local function skoobot_act(noAction)
 		
 		
 		-- for now just end the ai if we have nothing usable, will diagnose as this occurs
-		return aiStop("[Skoobot] [Combat]#GOLD#AI stopping: no usable talents available at this time")
+		return aiStop("#GOLD#[Skoobot] [Combat] AI stopping: no usable talents available at this time")
 		
 		-- no legal target! let's get closer
 		-- local a = Astar.new(game.level.map, game.player)
