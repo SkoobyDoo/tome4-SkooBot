@@ -167,6 +167,19 @@ local function getCombatTalents()
 end
 _M.getCombatTalents = getCombatTalents;
 
+local function getSustainableTalents()
+--This function should grab the talents from the hotbar intended for combat
+-- at time of writing that should be the talents in A1,A2,A3..A0 in order
+	local offset = 36
+	local hotkeys = { game.player.hotkey[10+offset], game.player.hotkey[9+offset], game.player.hotkey[8+offset], game.player.hotkey[7+offset], game.player.hotkey[6+offset], game.player.hotkey[5+offset], game.player.hotkey[4+offset], game.player.hotkey[3+offset], game.player.hotkey[2+offset], game.player.hotkey[1+offset] };
+	local sustainableTalents = {}
+	for k, v in pairs(hotkeys) do
+		sustainableTalents[v[2]] = 1
+	end
+	return sustainableTalents
+end
+_M.getSustainableTalents = getSustainableTalents;
+
 -- TODO exclude enemies in LOS but not LOE (can't Rush over pits, but can see)
 -- like when someone is standing in front of the target actor (with a non-piercing attack)?
 local function getAvailableTalents(target, talentsToUse)
@@ -247,7 +260,7 @@ end
 
 -- TODO add configurability, at least for Meditation
 local function activateSustained()
-    local talents = filterFailedTalents(getAvailableTalents())
+    local talents = filterFailedTalents(getSustainableTalents())
     for i,tid in pairs(talents) do
         local t = game.player:getTalentFromId(tid)
         if t.mode == "sustained" then
