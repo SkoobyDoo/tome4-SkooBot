@@ -286,6 +286,15 @@ local function skoobot_act()
         
         _M.skoobot_ai_state = SAI_STATE_FIGHT
     end
+	
+	_M.skoobot_ai_deltalife = game.player.life - _M.skoobot_ai_lastlife
+	_M.skoobot_ai_lastlife = game.player.life
+	if(abs(_M.skoobot_ai_deltalife) > 20) then
+		print("Large delta detected! = ".._M.skoobot_ai_deltalife)
+	end
+	if (_M.skoobot_ai_deltalife > 0) and (game.player.max_life / _M.skoobot_ai_deltalife < 4) then
+		return aiStop("#RED#AI Stopped: Lost more than 25% life in one turn!")
+	end
     
     activateSustained()
     
@@ -402,6 +411,7 @@ function _M:skoobot_start()
         return aiStop("#RED#Player AI cannot be used in the wilderness!")
     end
     _M.ai_active = true
+	_M.skoobot_ai_lastlife = game.player.life
     
     skoobot_act()
 end
