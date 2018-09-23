@@ -188,8 +188,8 @@ local function getAvailableTalents(target, talentsToUse)
 		-- No special check for bolts, etc.
 		local total_range = (game.player:getTalentRange(t) or 0) + (game.player:getTalentRadius(t) or 0)
 		local tg = {type=util.getval(t.direct_hit, game.player, t) and "hit" or "bolt", range=total_range}
-		print(tid.." tg = ")
-		table.print(tg)
+		--print(tid.." tg = ")
+		--table.print(tg)
 		if t.mode == "activated" and not t.no_npc_use and not t.no_dumb_use and
 		   not game.player:isTalentCoolingDown(t) and game.player:preUseTalent(t, true, true) and
 		   (target ~= nil and not game.player:getTalentRequiresTarget(t) or game.player:canProject(tg, tx, ty))
@@ -202,6 +202,8 @@ local function getAvailableTalents(target, talentsToUse)
 		   then
 			avail[#avail+1] = tid
 			print(game.player.name, game.player.uid, "dumb ai talents can activate", t.name, tid)
+		else
+			print("[Skoobot] [AvailableTalentFilter] Excluding talent: "..tid..", cannot be used on "..(target~=nil and target.name or "nil"))
 		end
 	end
 	return avail
@@ -279,6 +281,8 @@ end
 local function skoobot_act(noAction)
 -- THIS FUNCTION CAUSES THE AI TO MAKE A SINGLE DECISION AND ACT UPON IT
 -- IT CALLS ITSELF RECURSIVELY TO PROCEED TO THE NEXT ACTION
+    game.player.AI_talentfailed = {}
+	
     local hostiles = spotHostiles(game.player, true)
     if #hostiles > 0 then
         local low, msg = lowHealth(hostiles[0])
@@ -287,17 +291,17 @@ local function skoobot_act(noAction)
         _M.skoobot_ai_state = SAI_STATE_FIGHT
     end
 	
-	print("[Skoobot] Current Life = "..game.player.life)
-	print("[Skoobot] Last Life = ".._M.skoobot_ai_lastlife)
+	print("[Skoobot] [Survival] Current Life = "..game.player.life)
+	print("[Skoobot] [Survival]  Last Life = ".._M.skoobot_ai_lastlife)
 	if not noAction then
-		print("[Skoobot] Evaluating life change...")
+		print("[Skoobot] [Survival]  Evaluating life change...")
 		_M.skoobot_ai_deltalife = game.player.life - _M.skoobot_ai_lastlife
 		_M.skoobot_ai_lastlife = game.player.life
 		if(abs(_M.skoobot_ai_deltalife) > 0) then
-			print("[Skoobot] Delta detected! = ".._M.skoobot_ai_deltalife)
+			print("[Skoobot] [Survival] Delta detected! = ".._M.skoobot_ai_deltalife)
 		end
-		if (_M.skoobot_ai_deltalife > 0) and (game.player.max_life / _M.skoobot_ai_deltalife < 4) then
-			return aiStop("#RED#AI Stopped: Lost more than 25% life in one turn!")
+		if (_M.skoobot_ai_deltalife < 0) and (game.player.max_life / abs(_M.skoobot_ai_deltalife) < 4) then
+			return aiStop("#RED#[Skoobot] [Survival] AI Stopped: Lost more than 25% life in one turn!")
 		end
 	end
     
@@ -353,19 +357,23 @@ local function skoobot_act(noAction)
         end
         
         local target = getLowestHealthEnemy(targets)
+		print("[Skoobot] [Combat] Target selected: "..(target~=nil and target.name or "nil"))
         
         -- the AI is dumb and doesn't understand how powers work, so pick one at random!
         if target ~= nil then
             local talents = getAvailableTalents(target, getCombatTalents())
-			print("[Skoobot] Talents ready to go:")
+			print("[Skoobot] [Combat] Talents ready to go: ("..#talents..")")
 			table.print(talents)
             talents = filterFailedTalents(talents)
-	    	local tid = talents[rng.range(1, #talents)]
+			print("[Skoobot] [Combat] Talents after filter: ("..#talents..")")
+			table.print(talents)
+	    	local tid = talents[0]
 	    	if tid ~= nil then
+				print("[Skoobot] [Combat] Using talent: "..tid.." on target "..target.name)
                 game.player:setTarget(target.actor)
                 game.player:useTalent(tid,nil,nil,nil,target.actor)
     		    if game.player:enoughEnergy() then
-    		        skoobot_act()
+    		        return skoobot_act()
     		    end
     		    return
     		end
@@ -379,8 +387,9 @@ local function skoobot_act(noAction)
 		    return skoobot_act(true)
 		end
 		
+		
 		-- for now just end the ai if we have nothing usable, will diagnose as this occurs
-		return aiStop("#GOLD#AI stopping: no usable talents available at this time")
+		return aiStop("[Skoobot] [Combat]#GOLD#AI stopping: no usable talents available at this time")
 		
 		-- no legal target! let's get closer
 		-- local a = Astar.new(game.level.map, game.player)
@@ -430,10 +439,8 @@ function _M:act()
             return ret
         end
         _M.skoobot_aiTurnCount = _M.skoobot_aiTurnCount + 1
-        game.player.AI_talentfailed = {}
 		print("[Skoobot] Player Act Number ".._M.skoobot_aiTurnCount)
         skoobot_act()
-        game.player.AI_talentfailed = {}
     end
     if _M.skoobot_aiTurnCount > 10 then
 		aiStop("Ai ran for 10 turns. Remember to disable this for real runs")
