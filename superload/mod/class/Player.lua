@@ -569,9 +569,8 @@ function _M:act()
 		print("[Skoobot] Player Act Number ".._M.skoobot_aiTurnCount)
         skoobot_act()
     end
-    if _M.skoobot_aiTurnCount > 10 then
-		aiStop("Ai ran for 10 turns. Remember to disable this for real runs")
-        --aiStop("#LIGHT_RED#AI Disabled. AI acted for 1000 turns. Did it get stuck?")
+    if _M.skoobot_aiTurnCount > 1000 then
+        aiStop("#LIGHT_RED#AI Disabled. AI acted for 1000 turns. Did it get stuck?")
     end
     return ret
 end
