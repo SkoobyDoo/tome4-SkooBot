@@ -145,14 +145,29 @@ end
 local function getNearestHostile()
     local seen = spotHostiles(game.player)
     
-    target = nil
+    local target = nil
+	local targetdist = -1
     for index,enemy in pairs(seen) do
-        if target == nil
-        then
+        if target == nil then
             target = enemy
+			targetdist = core.fov.distance(game.player.x, game.player.y, enemy.x, enemy.y)
+		else
+			local nextdist = core.fov.distance(game.player.x, game.player.y, enemy.x, enemy.y)
+			if nextdist < targetdist then
+				targetdist = nextdist
+				target = enemy
+			end
         end
     end
     return target
+end
+
+local function getTalents()
+	local talents = {}
+	for k, v in pairs(game.player.talents) do
+		talents[#talents+1] = k
+	end
+	return talents
 end
 
 local function getCombatTalents()
@@ -161,7 +176,7 @@ local function getCombatTalents()
 	local hotkeys = { game.player.hotkey[10], game.player.hotkey[9], game.player.hotkey[8], game.player.hotkey[7], game.player.hotkey[6], game.player.hotkey[5], game.player.hotkey[4], game.player.hotkey[3], game.player.hotkey[2], game.player.hotkey[1] };
 	local combatTalents = {}
 	for k, v in pairs(hotkeys) do
-		combatTalents[v[2]] = 1
+		combatTalents[#combatTalents + 1] = v[2]
 	end
 	return combatTalents
 end
@@ -174,7 +189,7 @@ local function getSustainableTalents()
 	local hotkeys = { game.player.hotkey[10+offset], game.player.hotkey[9+offset], game.player.hotkey[8+offset], game.player.hotkey[7+offset], game.player.hotkey[6+offset], game.player.hotkey[5+offset], game.player.hotkey[4+offset], game.player.hotkey[3+offset], game.player.hotkey[2+offset], game.player.hotkey[1+offset] };
 	local sustainableTalents = {}
 	for k, v in pairs(hotkeys) do
-		sustainableTalents[v[2]] = 1
+		sustainableTalents[#sustainableTalents + 1] = v[2]
 	end
 	return sustainableTalents
 end
@@ -196,8 +211,8 @@ local function getAvailableTalents(target, talentsToUse)
 		print("[Skoobot] getting available talents with these to use:")
 		table.print(talentsToUse)
 	end
-	local theseTalents = talentsToUse or game.player.talents
-	for tid, _ in pairs(theseTalents) do
+	local theseTalents = talentsToUse or getTalents()
+	for i,tid in pairs(theseTalents) do
 		local t = game.player:getTalentFromId(tid)
 		-- For dumb AI assume we need range and LOS
 		-- No special check for bolts, etc.
@@ -263,6 +278,7 @@ local function activateSustained()
     local talents = filterFailedTalents(getSustainableTalents())
     for i,tid in pairs(talents) do
         local t = game.player:getTalentFromId(tid)
+		print("Attempting to sustain: "..tid)
         if t.mode == "sustained" then
             game.player:useTalent(tid)
         end
@@ -405,6 +421,7 @@ local function skoobot_act(noAction)
 		
 		
 		-- for now just end the ai if we have nothing usable, will diagnose as this occurs
+		print("no usable talents. Maybe attack "..getNearestHostile().name.." instead?")
 		return aiStop("#GOLD#[Skoobot] [Combat] AI stopping: no usable talents available at this time")
 		
 		-- no legal target! let's get closer
