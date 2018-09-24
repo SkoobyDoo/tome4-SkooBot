@@ -245,7 +245,7 @@ local function filterFailedTalents(t)
 
     local i = 0
     for k, v in pairs(t) do
-        if game.player.AI_talentfailed[v] == nil then
+		if not game.player:isTalentCoolingDown(game.player:getTalentFromId(v)) and game.player.AI_talentfailed[v] == nil then
             out[i] = v
             i = i + 1
         end
@@ -388,59 +388,36 @@ local function skoobot_act(noAction)
                 table.insert(targets, enemy)
             end
         end
-        
-        local target = getLowestHealthEnemy(targets)
-		print("[Skoobot] [Combat] Target selected: "..(target~=nil and target.name or "nil"))
-        
-        -- the AI is dumb and doesn't understand how powers work, so pick one at random!
-        if target ~= nil then
-            local talents = getAvailableTalents(target, getCombatTalents())
-			print("[Skoobot] [Combat] Talents ready to go: ("..#talents..")")
-			table.print(talents)
-            talents = filterFailedTalents(talents)
-			print("[Skoobot] [Combat] Talents after filter: ("..#talents..")")
-			table.print(talents)
-	    	local tid = talents[0]
-	    	if tid ~= nil then
-				print("[Skoobot] [Combat] Using talent: "..tid.." on target "..target.name)
-                game.player:setTarget(target.actor)
-                game.player:useTalent(tid,nil,nil,nil,target.actor)
-    		    if game.player:enoughEnergy() then
-    		        return skoobot_act()
-    		    end
-    		    return
-    		end
-    	end
 		
-		target = getLowestHealthEnemy(hostiles)
-		if target == nil then
+		local combatTalents = filterFailedTalents(getCombatTalents())
+		
+		local targets = {getLowestHealthEnemy(targets), getNearestHostile()}
+		if #targets == 0 then
 		    -- no enemies left in sight! fight's over
 		    -- TODO OR WE'RE BLIND!!!!!!! this edge case will likely resolve itself once HUNT works.
 		    _M.skoobot_ai_state = SAI_STATE_REST
 		    return skoobot_act(true)
 		end
-		
-		target = getNearestHostile()
-		print("[Skoobot] [Combat] No action taken. Nearest target selected instead: "..(target~=nil and target.name or "nil"))
         
-        if target ~= nil then
-            local talents = getAvailableTalents(target, getCombatTalents())
+		for i,enemy in pairs(targets) do
+			print("[Skoobot] [Combat] Target selected: "..enemy.name)
+			local talents = getAvailableTalents(enemy, combatTalents)
 			print("[Skoobot] [Combat] Talents ready to go: ("..#talents..")")
 			table.print(talents)
-            talents = filterFailedTalents(talents)
+			talents = filterFailedTalents(talents)
 			print("[Skoobot] [Combat] Talents after filter: ("..#talents..")")
 			table.print(talents)
-	    	local tid = talents[0]
+			local tid = talents[0]
 	    	if tid ~= nil then
-				print("[Skoobot] [Combat] Using talent: "..tid.." on target "..target.name)
-                game.player:setTarget(target.actor)
-                game.player:useTalent(tid,nil,nil,nil,target.actor)
+				print("[Skoobot] [Combat] Using talent: "..tid.." on target "..enemy.name)
+                game.player:setTarget(enemy.actor)
+                game.player:useTalent(tid,nil,nil,nil,enemy.actor)
     		    if game.player:enoughEnergy() then
     		        return skoobot_act()
     		    end
     		    return
     		end
-    	end
+		end
 		
 		
 		-- for now just end the ai if we have nothing usable, will diagnose as this occurs
