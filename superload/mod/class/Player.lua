@@ -72,6 +72,17 @@ local function getDirNum(src, dst)
     return util.coordToDir(dx, dy)
 end
 
+local function validateRest(turns)
+    if not turns or turns == 0 then
+        game.log("#GOLD#AI Turns Rested: "..tostring(turns))
+        -- TODO make sure this doesn't override damage taken
+        _M.skoobot_ai_state = SAI_STATE_EXPLORE
+        game.player.resting = nil
+        game.player:act()
+    end
+    -- else do nothing
+end
+
 local function SAI_useTalent(tid, _a, _b, _c, target)
 	if SAI_DO_NOTHING then
 		game.log("[Skoobai] AI would use the talent "..game.player:getTalentFromId(tid).name..(target and target.name or ""))
@@ -328,17 +339,6 @@ local function activateSustained()
         end
     end
 	return false
-end
-
-local function validateRest(turns)
-    if not turns or turns == 0 then
-        game.log("#GOLD#AI Turns Rested: "..tostring(turns))
-        -- TODO make sure this doesn't override damage taken
-        _M.skoobot_ai_state = SAI_STATE_EXPLORE
-        game.player.resting = nil
-        game.player:act()
-    end
-    -- else do nothing
 end
 
 local function getLowestHealthEnemy(enemySet)
