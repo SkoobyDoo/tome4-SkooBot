@@ -243,11 +243,9 @@ end
 local function filterFailedTalents(t)
     local out = {}
 
-    local i = 0
     for k, v in pairs(t) do
 		if not game.player:isTalentCoolingDown(game.player:getTalentFromId(v)) and game.player.AI_talentfailed[v] == nil then
-            out[i] = v
-            i = i + 1
+            out[#out + 1] = v
         end
     end
 
@@ -399,32 +397,40 @@ local function skoobot_act(noAction)
 		
 		local combatTalents = filterFailedTalents(getCombatTalents())
 		
-		local targets = {getLowestHealthEnemy(targets), getNearestHostile()}
-		if #targets == 0 then
-		    -- no enemies left in sight! fight's over
-		    -- TODO OR WE'RE BLIND!!!!!!! this edge case will likely resolve itself once HUNT works.
-		    _M.skoobot_ai_state = SAI_STATE_REST
-		    return skoobot_act(true)
-		end
-        
-		for i,enemy in pairs(targets) do
-			print("[Skoobot] [Combat] Target selected: "..enemy.name)
-			local talents = getAvailableTalents(enemy, combatTalents)
-			print("[Skoobot] [Combat] Talents ready to go: ("..#talents..")")
-			table.print(talents)
-			talents = filterFailedTalents(talents)
-			print("[Skoobot] [Combat] Talents after filter: ("..#talents..")")
-			table.print(talents)
-			local tid = talents[0]
-	    	if tid ~= nil then
-				print("[Skoobot] [Combat] Using talent: "..tid.." on target "..enemy.name)
-                game.player:setTarget(enemy.actor)
-                game.player:useTalent(tid,nil,nil,nil,enemy.actor)
-    		    if game.player:enoughEnergy() then
-    		        return skoobot_act()
-    		    end
-    		    return
-    		end
+		if #combatTalents > 0 then
+			local targets = {getLowestHealthEnemy(targets), getNearestHostile()}
+			if #targets == 0 then
+				-- no enemies left in sight! fight's over
+				-- TODO OR WE'RE BLIND!!!!!!! this edge case will likely resolve itself once HUNT works.
+				_M.skoobot_ai_state = SAI_STATE_REST
+				return skoobot_act(true)
+			end
+			
+			for i,enemy in pairs(targets) do
+				print("[Skoobot] [Combat] Target selected: "..enemy.name)
+				local talents = getAvailableTalents(enemy, combatTalents)
+				print("[Skoobot] [Combat] Talents ready to go: ("..#talents..")")
+				table.print(talents)
+				talents = filterFailedTalents(talents)
+				print("[Skoobot] [Combat] Talents after filter: ("..#talents..")")
+				table.print(talents)
+				local tid = talents[1]
+				if tid ~= nil then
+					print("[Skoobot] [Combat] Using talent: "..tid.." on target "..enemy.name)
+					game.player:setTarget(enemy.actor)
+					game.player:useTalent(tid,nil,nil,nil,enemy.actor)
+					if game.player:enoughEnergy() then
+						return skoobot_act()
+					end
+					return
+				end
+			end
+		else
+			-- everything is on cooldown, what do?
+			-- pass a turn!
+			print("[Skoobot] [Combat] All Combat talents on cooldown. Waiting.")
+			game.player:useEnergy()
+			return
 		end
 		
 		
