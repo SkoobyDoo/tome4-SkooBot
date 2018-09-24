@@ -12,7 +12,9 @@ class:bindHook("ToME:run", function(self, data)
 			game.log("Feature not yet implemented.")
 		end,
 		ASK_SKOOBOT = function()
-			game.log("Feature not yet implemented.")
+		    local Player = require "mod.class.Player"
+		    game.log("#GOLD#SkooBot Query requested!")
+			Player.skoobot_query()
 		end
 	}
 end)

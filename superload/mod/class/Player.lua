@@ -472,7 +472,7 @@ local function skoobot_act(noAction)
 					print("[Skoobot] [Combat] Using talent: "..tid.." on target "..enemy.name)
 					game.player:setTarget(enemy.actor)
 					SAI_useTalent(tid,nil,nil,nil,enemy.actor)
-					if game.player:enoughEnergy() then
+					if game.player:enoughEnergy() and _M.ai_active then
 						return skoobot_act()
 					end
 					return
@@ -527,6 +527,21 @@ function _M:skoobot_start()
 	_M.skoobot_ai_lastlife = game.player.life
     
     skoobot_act(true)
+end
+
+function _M:skoobot_query()
+-- THIS FUNCTION IS TRIGGERED BY THE KEYBIND FOR THE AI.
+-- THIS IS WHERE THE AI BEGINS RUNNING, OR STOPS RUNNING
+    if _M.ai_active == true then
+        return game.log("Cannot query while SkooBot is active!")
+    end
+    if game.zone.wilderness then
+        return aiStop("#RED#SkooBot cannot be used in the wilderness!")
+    end
+    
+	SAI_DO_NOTHING = true
+    skoobot_act(true)
+	SAI_DO_NOTHING = false
 end
 
 local old_act = _M.act
