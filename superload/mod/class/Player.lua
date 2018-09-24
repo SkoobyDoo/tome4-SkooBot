@@ -71,6 +71,26 @@ local function getDirNum(src, dst)
     return util.coordToDir(dx, dy)
 end
 
+local function SAI_useTalent(tid, _a, _b, _c, target)
+	game.player:useTalent(tid, _a, _b, _c, target)
+end
+
+local function SAI_passTurn()
+	game.player:useEnergy()
+end
+
+local function SAI_movePlayer(x, y)
+	return game.player:move(x, y)
+end
+
+local function SAI_beginExplore()
+	game.player:autoExplore()
+end
+
+local function SAI_beginRest()
+	game.player:restInit(nil,nil,nil,nil,validateRest)
+end
+
 local function spotHostiles(self, actors_only)
 	local seen = {}
 	if not self.x then return seen end
@@ -279,7 +299,7 @@ local function activateSustained()
         local t = game.player:getTalentFromId(tid)
 		print("Attempting to sustain: "..tid)
         if t.mode == "sustained" and game.player.sustain_talents[tid] == nil then
-            game.player:useTalent(tid)
+            SAI_useTalent(tid)
         end
     end
 end
@@ -348,14 +368,14 @@ local function skoobot_act(noAction)
             -- run to air
             local path = getPathToAir(game.player)
             if path ~= nil then
-                local moved = game.player:move(path[1].x, path[1].y)
+                local moved = SAI_movePlayer(path[1].x, path[1].y)
             end
             
             if not moved then
                 return aiStop("#RED#AI stopped: Suffocating, no air in sight!")
             end
         end
-        return game.player:restInit(nil,nil,nil,nil,validateRest)
+        return SAI_beginRest()
     elseif _M.skoobot_ai_state == SAI_STATE_EXPLORE then
 		if _M.skoobot_ai_deltalife < 0 then
 			if #hostiles > 0 then
@@ -369,7 +389,7 @@ local function skoobot_act(noAction)
             _M.skoobot_ai_state = SAI_STATE_REST
             return skoobot_act(true)
         end
-        game.player:autoExplore()
+        SAI_beginExplore()
         -- NOTE: Due to execution order, this may actually be checking the start tile
         if game.level.map:checkEntity(game.player.x, game.player.y, engine.Map.TERRAIN, "change_level") then
             aiStop("#GOLD#AI stopping: level change found")
@@ -418,7 +438,7 @@ local function skoobot_act(noAction)
 				if tid ~= nil then
 					print("[Skoobot] [Combat] Using talent: "..tid.." on target "..enemy.name)
 					game.player:setTarget(enemy.actor)
-					game.player:useTalent(tid,nil,nil,nil,enemy.actor)
+					SAI_useTalent(tid,nil,nil,nil,enemy.actor)
 					if game.player:enoughEnergy() then
 						return skoobot_act()
 					end
@@ -429,7 +449,7 @@ local function skoobot_act(noAction)
 			-- everything is on cooldown, what do?
 			-- pass a turn!
 			print("[Skoobot] [Combat] All Combat talents on cooldown. Waiting.")
-			game.player:useEnergy()
+			SAI_passTurn()
 			return
 		end
 		
@@ -456,7 +476,7 @@ local function skoobot_act(noAction)
         -- end
         -- if not moved then
             -- -- Maybe we're pinned and can't move?
-            -- game.player:useEnergy()
+            -- SAI_passTurn()
         -- end
     end
 end
