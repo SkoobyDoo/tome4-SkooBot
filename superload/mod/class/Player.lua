@@ -359,6 +359,14 @@ local function skoobot_act(noAction)
         end
         return game.player:restInit(nil,nil,nil,nil,validateRest)
     elseif _M.skoobot_ai_state == SAI_STATE_EXPLORE then
+		if _M.skoobot_ai_deltalife < 0 then
+			if #hostiles > 0 then
+				_M.skoobot_ai_state = SAI_STATE_FIGHT
+				return skoobot_act(true)
+			else
+				aiStop("#RED#AI stopped: took damage while exploring!")
+			end
+		end
         if game.player.air < 75 then
             _M.skoobot_ai_state = SAI_STATE_REST
             return skoobot_act(true)
