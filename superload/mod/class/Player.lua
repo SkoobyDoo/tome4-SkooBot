@@ -143,7 +143,7 @@ local function getPathToAir(self)
 end
 
 local function getNearestHostile()
-    local seen = spotHostiles(game.player)
+    local seen = spotHostiles(game.player, true)
     
     local target = nil
 	local targetdist = nil
