@@ -423,11 +423,10 @@ local function skoobot_act(noAction)
             _M.skoobot_ai_state = SAI_STATE_REST
             return skoobot_act(true)
         end
-        SAI_beginExplore()
-        -- NOTE: Due to execution order, this may actually be checking the start tile
         if game.level.map:checkEntity(game.player.x, game.player.y, engine.Map.TERRAIN, "change_level") then
             aiStop("#GOLD#AI stopping: level change found")
         end
+        SAI_beginExplore()
         return
         
     elseif _M.skoobot_ai_state == SAI_STATE_HUNT then
