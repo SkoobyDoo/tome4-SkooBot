@@ -367,6 +367,7 @@ local function skoobot_act(noAction)
         _M.skoobot_ai_state = SAI_STATE_FIGHT
     end
 	
+	_M.skoobot_ai_lastlife = _M.skoobot_ai_lastlife~=nil and _M.skoobot_ai_lastlife or game.player.life
 	print("[Skoobot] [Survival] Current Life = "..game.player.life)
 	print("[Skoobot] [Survival]  Last Life = ".._M.skoobot_ai_lastlife)
 	if not noAction then
