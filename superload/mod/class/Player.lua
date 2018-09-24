@@ -419,9 +419,30 @@ local function skoobot_act(noAction)
 		    return skoobot_act(true)
 		end
 		
+		target = getNearestHostile()
+		print("[Skoobot] [Combat] No action taken. Nearest target selected instead: "..(target~=nil and target.name or "nil"))
+        
+        if target ~= nil then
+            local talents = getAvailableTalents(target, getCombatTalents())
+			print("[Skoobot] [Combat] Talents ready to go: ("..#talents..")")
+			table.print(talents)
+            talents = filterFailedTalents(talents)
+			print("[Skoobot] [Combat] Talents after filter: ("..#talents..")")
+			table.print(talents)
+	    	local tid = talents[0]
+	    	if tid ~= nil then
+				print("[Skoobot] [Combat] Using talent: "..tid.." on target "..target.name)
+                game.player:setTarget(target.actor)
+                game.player:useTalent(tid,nil,nil,nil,target.actor)
+    		    if game.player:enoughEnergy() then
+    		        return skoobot_act()
+    		    end
+    		    return
+    		end
+    	end
+		
 		
 		-- for now just end the ai if we have nothing usable, will diagnose as this occurs
-		print("no usable talents. Maybe attack "..getNearestHostile().name.." instead?")
 		return aiStop("#GOLD#[Skoobot] [Combat] AI stopping: no usable talents available at this time")
 		
 		-- no legal target! let's get closer
