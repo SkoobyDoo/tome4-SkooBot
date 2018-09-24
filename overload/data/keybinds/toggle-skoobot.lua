@@ -18,8 +18,22 @@
 -- darkgod@te4.org
 
 defineAction{
-	default = { "sym:_F2:false:false:true:false" },
+	default = { "sym:_F1:false:false:true:false" },
 	type = "TOGGLE_SKOOBOT",
 	group = "actions",
 	name = "Toggle SkooBot",
+}
+
+defineAction{
+	default = { "sym:_F2:false:false:true:false" },
+	type = "SKOOBOT_RUNONCE",
+	group = "actions",
+	name = "Run SkooBot Once",
+}
+
+defineAction{
+	default = { "sym:_F3:false:false:true:false" },
+	type = "ASK_SKOOBOT",
+	group = "actions",
+	name = "Ask SkooBot for action",
 }
