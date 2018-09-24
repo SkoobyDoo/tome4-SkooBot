@@ -38,6 +38,7 @@ _M.skoobot_ai_state = SAI_STATE_REST
 _M.skoobot_aiTurnCount = 0
 
 local SAI_LOWHEALTH_RATIO = 0.50
+local SAI_DO_NOTHING = false
 
 _M.AI_talentfailed = {}
 
@@ -294,14 +295,17 @@ end
 
 -- TODO add configurability, at least for Meditation
 local function activateSustained()
+-- returns true if anything was sustained, else returns false.
     local talents = filterFailedTalents(getSustainableTalents())
     for i,tid in pairs(talents) do
         local t = game.player:getTalentFromId(tid)
 		print("Attempting to sustain: "..tid)
         if t.mode == "sustained" and game.player.sustain_talents[tid] == nil then
             SAI_useTalent(tid)
+			return true
         end
     end
+	return false
 end
 
 local function validateRest(turns)
@@ -356,7 +360,9 @@ local function skoobot_act(noAction)
 		end
 	end
     
-    activateSustained()
+    if activateSustained() then
+		return
+	end
     
     game.log(aiStateString())
     
@@ -371,8 +377,10 @@ local function skoobot_act(noAction)
                 local moved = SAI_movePlayer(path[1].x, path[1].y)
             end
             
-            if not moved then
+            if not moved and _M.ai_active then
                 return aiStop("#RED#AI stopped: Suffocating, no air in sight!")
+			else
+				return
             end
         end
         return SAI_beginRest()
