@@ -9,7 +9,9 @@ class:bindHook("ToME:run", function(self, data)
 			Player.skoobot_start()
 		end,
 		SKOOBOT_RUNONCE = function()
-			game.log("Feature not yet implemented.")
+		    local Player = require "mod.class.Player"
+		    game.log("#GOLD#SkooBot Toggle requested!")
+			Player.skoobot_runonce()
 		end,
 		ASK_SKOOBOT = function()
 		    local Player = require "mod.class.Player"

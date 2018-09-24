@@ -368,6 +368,7 @@ local function skoobot_act(noAction)
     end
 	
 	_M.skoobot_ai_lastlife = _M.skoobot_ai_lastlife~=nil and _M.skoobot_ai_lastlife or game.player.life
+	_M.skoobot_ai_deltalife = _M.skoobot_ai_deltalife~=nil and _M.skoobot_ai_deltalife or 0
 	print("[Skoobot] [Survival] Current Life = "..game.player.life)
 	print("[Skoobot] [Survival]  Last Life = ".._M.skoobot_ai_lastlife)
 	if not noAction then
@@ -542,6 +543,19 @@ function _M:skoobot_query()
 	SAI_DO_NOTHING = true
     skoobot_act(true)
 	SAI_DO_NOTHING = false
+end
+
+function _M:skoobot_runonce()
+-- THIS FUNCTION IS TRIGGERED BY THE KEYBIND FOR THE AI.
+-- THIS IS WHERE THE AI BEGINS RUNNING, OR STOPS RUNNING
+    if _M.ai_active == true then
+        return game.log("Cannot runonce while SkooBot is active!")
+    end
+    if game.zone.wilderness then
+        return aiStop("#RED#SkooBot cannot be used in the wilderness!")
+    end
+    
+    skoobot_act(true)
 end
 
 local old_act = _M.act
