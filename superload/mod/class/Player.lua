@@ -280,7 +280,7 @@ local function activateSustained()
     for i,tid in pairs(talents) do
         local t = game.player:getTalentFromId(tid)
 		print("Attempting to sustain: "..tid)
-        if t.mode == "sustained" then
+        if t.mode == "sustained" and game.player.sustain_talents[tid] == nil then
             game.player:useTalent(tid)
         end
     end
