@@ -146,7 +146,7 @@ local function getNearestHostile()
     local seen = spotHostiles(game.player)
     
     local target = nil
-	local targetdist = -1
+	local targetdist = nil
     for index,enemy in pairs(seen) do
         if target == nil then
             target = enemy
@@ -159,6 +159,7 @@ local function getNearestHostile()
 			end
         end
     end
+	_M.skoobot_aiNearestHostileDistance = targetdist
     return target
 end
 
