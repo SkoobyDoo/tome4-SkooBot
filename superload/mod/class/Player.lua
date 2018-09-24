@@ -73,23 +73,44 @@ local function getDirNum(src, dst)
 end
 
 local function SAI_useTalent(tid, _a, _b, _c, target)
-	game.player:useTalent(tid, _a, _b, _c, target)
+	if SAI_DO_NOTHING then
+		game.log("[Skoobai] AI would use the talent "..game.player:getTalentFromId(tid).name..(target and target.name or ""))
+		return
+	end
+	return game.player:useTalent(tid, _a, _b, _c, target)
 end
 
 local function SAI_passTurn()
+	if SAI_DO_NOTHING then
+		game.log("[Skoobai] AI would pass a turn.")
+		return
+	end
 	game.player:useEnergy()
 end
 
 local function SAI_movePlayer(x, y)
+	if SAI_DO_NOTHING then
+		game.log("[Skoobai] AI would move to the "..game.level.map:compassDirection(x - game.player.x, y - game.player.y))
+		return
+	end
 	return game.player:move(x, y)
 end
 
 local function SAI_beginExplore()
+	if SAI_DO_NOTHING then
+		game.log("[Skoobai] AI would begin exploring.")
+		return
+	end
 	game.player:autoExplore()
 end
 
 local function SAI_beginRest()
+	if SAI_DO_NOTHING then
+		game.log("[Skoobai] AI would begin resting.")
+		return false
+	end
 	game.player:restInit(nil,nil,nil,nil,validateRest)
+	return true
 end
 
 local function spotHostiles(self, actors_only)
@@ -301,8 +322,9 @@ local function activateSustained()
         local t = game.player:getTalentFromId(tid)
 		print("Attempting to sustain: "..tid)
         if t.mode == "sustained" and game.player.sustain_talents[tid] == nil then
-            SAI_useTalent(tid)
-			return true
+            if(SAI_useTalent(tid)) then
+				return true
+			end
         end
     end
 	return false
@@ -310,7 +332,7 @@ end
 
 local function validateRest(turns)
     if not turns or turns == 0 then
-        --game.log("#GOLD#AI Turns Rested: "..tostring(turns))
+        game.log("#GOLD#AI Turns Rested: "..tostring(turns))
         -- TODO make sure this doesn't override damage taken
         _M.skoobot_ai_state = SAI_STATE_EXPLORE
         game.player.resting = nil
@@ -383,7 +405,9 @@ local function skoobot_act(noAction)
 				return
             end
         end
-        return SAI_beginRest()
+        if not SAI_beginRest() then
+			return
+		end
     elseif _M.skoobot_ai_state == SAI_STATE_EXPLORE then
 		if _M.skoobot_ai_deltalife < 0 then
 			if #hostiles > 0 then
