@@ -279,7 +279,7 @@ local function getAvailableTalents(target, talentsToUse)
 		   (target ~= nil and not game.player:getTalentRequiresTarget(t) or game.player:canProject(tg, tx, ty))
 		   then
 			avail[#avail+1] = tid
-			print(game.player.name, game.player.uid, "dumb ai talents can use", t.name, tid)
+			print("[Skoobot] [AvailableTalentFilter]", game.player.name, game.player.uid, "dumb ai talents can use", t.name, tid)
 		elseif t.mode == "sustained" and not t.no_npc_use and not t.no_dumb_use and not game.player:isTalentCoolingDown(t) and
 		   not game.player:isTalentActive(t.id) and
 		   game.player:preUseTalent(t, true, true)
@@ -331,7 +331,7 @@ local function activateSustained()
     local talents = filterFailedTalents(getSustainableTalents())
     for i,tid in pairs(talents) do
         local t = game.player:getTalentFromId(tid)
-		print("Attempting to sustain: "..tid)
+		print("[Skoobot] [Sustain] Attempting to sustain: "..tid)
         if t.mode == "sustained" and game.player.sustain_talents[tid] == nil then
             if(SAI_useTalent(tid)) then
 				return true
