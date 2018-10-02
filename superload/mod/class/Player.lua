@@ -357,8 +357,6 @@ end
 local function skoobot_act(noAction)
 -- THIS FUNCTION CAUSES THE AI TO MAKE A SINGLE DECISION AND ACT UPON IT
 -- IT CALLS ITSELF RECURSIVELY TO PROCEED TO THE NEXT ACTION
-    game.player.AI_talentfailed = {}
-	
     local hostiles = spotHostiles(game.player, true)
     if #hostiles > 0 then
         local low, msg = lowHealth(hostiles[0])
@@ -372,6 +370,7 @@ local function skoobot_act(noAction)
 	print("[Skoobot] [Survival] Current Life = "..game.player.life)
 	print("[Skoobot] [Survival]  Last Life = ".._M.skoobot_ai_lastlife)
 	if not noAction then
+		game.player.AI_talentfailed = {}
 		print("[Skoobot] [Survival]  Evaluating life change...")
 		_M.skoobot_ai_deltalife = game.player.life - _M.skoobot_ai_lastlife
 		_M.skoobot_ai_lastlife = game.player.life
@@ -473,7 +472,7 @@ local function skoobot_act(noAction)
 					game.player:setTarget(enemy.actor)
 					SAI_useTalent(tid,nil,nil,nil,enemy.actor)
 					if game.player:enoughEnergy() and _M.ai_active then
-						return skoobot_act()
+						return skoobot_act(true)
 					end
 					return
 				end
