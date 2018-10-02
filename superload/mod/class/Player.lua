@@ -85,7 +85,7 @@ end
 
 local function SAI_useTalent(tid, _a, _b, _c, target)
 	if SAI_DO_NOTHING then
-		game.log("[Skoobai] AI would use the talent "..game.player:getTalentFromId(tid).name..(target and target.name or ""))
+		game.log("[Skoobot] AI would use the talent "..game.player:getTalentFromId(tid).name..(target and target.name or ""))
 		return
 	end
 	return game.player:useTalent(tid, _a, _b, _c, target)
@@ -93,7 +93,7 @@ end
 
 local function SAI_passTurn()
 	if SAI_DO_NOTHING then
-		game.log("[Skoobai] AI would pass a turn.")
+		game.log("[Skoobot] AI would pass a turn.")
 		return
 	end
 	game.player:useEnergy()
@@ -101,7 +101,7 @@ end
 
 local function SAI_movePlayer(x, y)
 	if SAI_DO_NOTHING then
-		game.log("[Skoobai] AI would move to the "..game.level.map:compassDirection(x - game.player.x, y - game.player.y))
+		game.log("[Skoobot] AI would move to the "..game.level.map:compassDirection(x - game.player.x, y - game.player.y))
 		return
 	end
 	return game.player:move(x, y)
@@ -109,7 +109,7 @@ end
 
 local function SAI_beginExplore()
 	if SAI_DO_NOTHING then
-		game.log("[Skoobai] AI would begin exploring.")
+		game.log("[Skoobot] AI would begin exploring.")
 		return
 	end
 	game.player:autoExplore()
@@ -117,7 +117,7 @@ end
 
 local function SAI_beginRest()
 	if SAI_DO_NOTHING then
-		game.log("[Skoobai] AI would begin resting.")
+		game.log("[Skoobot] AI would begin resting.")
 		return false
 	end
 	game.player:restInit(nil,nil,nil,nil,validateRest)
