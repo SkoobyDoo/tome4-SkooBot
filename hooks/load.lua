@@ -8,6 +8,11 @@ class:bindHook("ToME:run", function(self, data)
 		    game.log("#GOLD#SkooBot Toggle requested!")
 			Player.skoobot_start()
 		end,
+		DISABLE_SKOOBOT = function()
+		    local Player = require "mod.class.Player"
+		    game.log("#GOLD#SkooBot Disable requested!")
+			Player.ai_active = false
+		end,
 		SKOOBOT_RUNONCE = function()
 		    local Player = require "mod.class.Player"
 		    game.log("#GOLD#SkooBot Single Run requested!")

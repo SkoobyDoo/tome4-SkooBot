@@ -25,6 +25,13 @@ defineAction{
 }
 
 defineAction{
+	default = { "sym:_F1:false:true:false:false" },
+	type = "DISABLE_SKOOBOT",
+	group = "actions",
+	name = "Disable SkooBot",
+}
+
+defineAction{
 	default = { "sym:_F2:false:false:true:false" },
 	type = "SKOOBOT_RUNONCE",
 	group = "actions",
