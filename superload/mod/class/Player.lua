@@ -478,6 +478,32 @@ local function skoobot_act(noAction)
 					return
 				end
 			end
+			
+			-- no legal target! let's get closer
+			local a = Astar.new(game.level.map, game.player)
+			local path = a:calc(game.player.x, game.player.y, targets[1].x, targets[1].y)
+			local dir = getDirNum(game.player, targets[1])
+			local moved = false
+			
+			if not path then
+				--game.log("#RED#[Skoobot] [Combat] Path not found, trying beeline")
+				--moved = game.player:attackOrMoveDir(dir)
+				return aiStop("#RED#[Skoobot] [Combat] [Movement] AI stopped: Unable to calcuate path to nearest enemy!")
+			else
+				--game.log("#GREEN#move via path")
+				local moved = game.player:move(path[1].x, path[1].y)
+				if not moved then
+					--game.log("#RED#[Skoobot] [Combat] Normal movement failed, trying beeline")
+					--moved = game.player:attackOrMoveDir(dir)
+					return aiStop("#RED#[Skoobot] [Combat] [Movement] AI stopped: Movement along path to nearest enemy failed!")
+				end
+				return
+			end
+			if not moved then
+				-- Maybe we're pinned and can't move?
+				SAI_passTurn()
+				return
+			end
 		else
 			-- everything is on cooldown, what do?
 			-- pass a turn!
@@ -488,29 +514,7 @@ local function skoobot_act(noAction)
 		
 		
 		-- for now just end the ai if we have nothing usable, will diagnose as this occurs
-		return aiStop("#GOLD#[Skoobot] [Combat] AI stopping: no usable talents available at this time")
-		
-		-- no legal target! let's get closer
-		-- local a = Astar.new(game.level.map, game.player)
-        -- local path = a:calc(game.player.x, game.player.y, target.x, target.y)
-        -- local dir = getDirNum(game.player, target)
-        -- local moved = false
-        
-        -- if not path then
-            -- --game.log("#RED#Path not found, trying beeline")
-            -- moved = game.player:attackOrMoveDir(dir)
-        -- else
-            -- --game.log("#GREEN#move via path")
-            -- local moved = game.player:move(path[1].x, path[1].y)
-            -- if not moved then
-                -- --game.log("#RED#Normal movement failed, trying beeline")
-                -- moved = game.player:attackOrMoveDir(dir)
-            -- end
-        -- end
-        -- if not moved then
-            -- -- Maybe we're pinned and can't move?
-            -- SAI_passTurn()
-        -- end
+		return aiStop("#GOLD#[Skoobot] [Combat] AI stopping: AI was unable to take a combat action (movement/talent)")
     end
 end
 
