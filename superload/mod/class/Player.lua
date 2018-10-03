@@ -36,6 +36,7 @@ local SAI_STATE_FIGHT = 13
 
 _M.skoobot_ai_state = SAI_STATE_REST
 _M.skoobot_aiTurnCount = 0
+_M.skoobot_aiThinkCount = 0
 
 local SAI_LOWHEALTH_RATIO = 0.50
 local SAI_DO_NOTHING = false
@@ -383,6 +384,7 @@ local function skoobot_act(noAction)
 	print("[Skoobot] [Survival] Current Life = "..game.player.life)
 	print("[Skoobot] [Survival]  Last Life = ".._M.skoobot_ai_lastlife)
 	if not noAction then
+		_M.skoobot_aiThinkCount = 0
 		game.player.AI_talentfailed = {}
 		print("[Skoobot] [Survival]  Evaluating life change...")
 		_M.skoobot_ai_deltalife = game.player.life - _M.skoobot_ai_lastlife
@@ -394,6 +396,11 @@ local function skoobot_act(noAction)
 			print("#RED#[Skoobot] [Survival] AI Stopped: Lost more than "..math.floor(100*SAI_LOWHEALTH_RATIO/2).."% life in one turn!")
 			return aiStop("AI Stopped: Lost more than "..math.floor(100*SAI_LOWHEALTH_RATIO/2).."%% life in one turn!")
 		end
+	end
+	
+	_M.skoobot_aiThinkCount = _M.skoobot_aiThinkCount + 1
+	if _M.skoobot_aiThinkCount > 25 then
+		return aiStop("#RED#AI Stopped: Number of attempts to calculate action exceeded maximum!")
 	end
     
     if activateSustained() then
@@ -570,7 +577,7 @@ function _M:skoobot_start()
     _M.ai_active = true
 	_M.skoobot_ai_lastlife = game.player.life
     
-    skoobot_act(true)
+    skoobot_act()
 end
 
 function _M:skoobot_query()
