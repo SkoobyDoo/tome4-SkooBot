@@ -471,6 +471,34 @@ local function skoobot_act(noAction)
 				return skoobot_act(true)
 			end
 			
+			if (_M.skoobot_ai_deltalife < 0) and ( abs(_M.skoobot_ai_deltalife) / game.player.max_life >= SAI_LOWHEALTH_RATIO / 4) then
+				talents = filterFailedTalents(getSustainTalents())
+				if #talents > 0 then
+					print("[Skoobot] [Survival] [Sustain] using sustain, lost more than "..math.floor(100*SAI_LOWHEALTH_RATIO/4).."% life in one turn!")
+					SAI_useTalent(talents[1])
+					if game.player:enoughEnergy() and _M.ai_active then
+						return skoobot_act(true)
+					end
+					return
+				else
+					print("[Skoobot] [Survival] [Sustain] Lost more than "..math.floor(100*SAI_LOWHEALTH_RATIO/4).."% life, but no sustain off cooldown!")
+				end
+			end
+			
+			if (game.player.life / game.player.max_life <= 1 - SAI_LOWHEALTH_RATIO / 4) then
+				talents = filterFailedTalents(getRecoveryTalents())
+				if #talents > 0 then
+					print("[Skoobot] [Survival] [Recovery] using recovery, missing more than "..math.floor(100*SAI_LOWHEALTH_RATIO/4).."% life...")
+					SAI_useTalent(talents[1])
+					if game.player:enoughEnergy() and _M.ai_active then
+						return skoobot_act(true)
+					end
+					return
+				else
+					print("[Skoobot] [Survival] [Recovery] Missing more than "..math.floor(100*SAI_LOWHEALTH_RATIO/4).."% life, but no recovery off cooldown!")
+				end
+			end
+			
 			for i,enemy in pairs(targets) do
 				print("[Skoobot] [Combat] Target selected: "..enemy.name)
 				local talents = getAvailableTalents(enemy, combatTalents)
