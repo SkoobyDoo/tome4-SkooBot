@@ -249,6 +249,36 @@ local function getSustainableTalents()
 end
 _M.getSustainableTalents = getSustainableTalents;
 
+local function getSustainTalents()
+--This function should grab the talents from the hotbar intended for shields (typically instant)
+-- at time of writing that should be the talent S1
+	local offset = 24 + 0
+	local count = 2
+	local sustainTalents = {}
+	for i=offset+1,offset+count do
+		if game.player.hotkey[i] and game.player.hotkey[i][1] == "talent" then
+			sustainTalents[#sustainTalents + 1] = game.player.hotkey[i][2]
+		end
+	end
+	return sustainTalents
+end
+_M.getSustainTalents = getSustainTalents;
+
+local function getRecoveryTalents()
+--This function should grab the talents from the hotbar intended for combat
+-- at time of writing that should be the talent S2
+	local offset = 24 + 2
+	local count = 2
+	local recoveryTalents = {}
+	for i=offset+1,offset+count do
+		if game.player.hotkey[i] and game.player.hotkey[i][1] == "talent" then
+			recoveryTalents[#recoveryTalents + 1] = game.player.hotkey[i][2]
+		end
+	end
+	return recoveryTalents
+end
+_M.getRecoveryTalents = getRecoveryTalents;
+
 -- TODO exclude enemies in LOS but not LOE (can't Rush over pits, but can see)
 -- like when someone is standing in front of the target actor (with a non-piercing attack)?
 local function getAvailableTalents(target, talentsToUse)
