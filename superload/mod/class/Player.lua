@@ -394,13 +394,13 @@ local function skoobot_act(noAction)
 		end
 		if (_M.skoobot_ai_deltalife < 0) and ( abs(_M.skoobot_ai_deltalife) / game.player.max_life >= SAI_LOWHEALTH_RATIO / 2) then
 			print("#RED#[Skoobot] [Survival] AI Stopped: Lost more than "..math.floor(100*SAI_LOWHEALTH_RATIO/2).."% life in one turn!")
-			return aiStop("AI Stopped: Lost more than "..math.floor(100*SAI_LOWHEALTH_RATIO/2).."%% life in one turn!")
+			return aiStop("#RED#AI Stopped: Lost more than "..math.floor(100*SAI_LOWHEALTH_RATIO/2).."%% life in one turn!")
 		end
 	end
 	
 	_M.skoobot_aiThinkCount = _M.skoobot_aiThinkCount + 1
 	if _M.skoobot_aiThinkCount > 25 then
-		return aiStop("#RED#AI Stopped: Number of attempts to calculate action exceeded maximum!")
+		return aiStop("#LIGHT_RED#AI Stopped: Number of attempts to calculate action exceeded maximum!")
 	end
     
     if activateSustained() then
@@ -561,7 +561,7 @@ local function skoobot_act(noAction)
 		
 		
 		-- for now just end the ai if we have nothing usable, will diagnose as this occurs
-		return aiStop("#GOLD#[Skoobot] [Combat] AI stopping: AI was unable to take a combat action (movement/talent)")
+		return aiStop("#RED#[Skoobot] [Combat] AI stopping: AI was unable to take a combat action (movement/talent)")
     end
 end
 
