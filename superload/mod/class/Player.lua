@@ -407,7 +407,7 @@ local function skoobot_act(noAction)
 		return
 	end
     
-    game.log(aiStateString())
+    --game.log(aiStateString())
     
 	if _M.skoobot_ai_state == SAI_STATE_STOP then
 		return
