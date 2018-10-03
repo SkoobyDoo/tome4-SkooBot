@@ -224,58 +224,41 @@ local function getTalents()
 	return talents
 end
 
+local function getHotbarTalents(offset, count)
+	local talents = {}
+	for i=offset+1,offset+count do
+		if game.player.hotkey[i] and game.player.hotkey[i][1] == "talent" then
+			talents[#talents + 1] = game.player.hotkey[i][2]
+		end
+	end
+	return talents
+end
+
 local function getCombatTalents()
 --This function should grab the talents from the hotbar intended for combat
 -- at time of writing that should be the talents in 1,2,3..0 in order
-	local hotkeys = { game.player.hotkey[10], game.player.hotkey[9], game.player.hotkey[8], game.player.hotkey[7], game.player.hotkey[6], game.player.hotkey[5], game.player.hotkey[4], game.player.hotkey[3], game.player.hotkey[2], game.player.hotkey[1] };
-	local combatTalents = {}
-	for k, v in pairs(hotkeys) do
-		combatTalents[#combatTalents + 1] = v[2]
-	end
-	return combatTalents
+	return getHotbarTalents(0,10)
 end
 _M.getCombatTalents = getCombatTalents;
 
 local function getSustainableTalents()
 --This function should grab the talents from the hotbar intended for combat
 -- at time of writing that should be the talents in A1,A2,A3..A0 in order
-	local offset = 36
-	local hotkeys = { game.player.hotkey[10+offset], game.player.hotkey[9+offset], game.player.hotkey[8+offset], game.player.hotkey[7+offset], game.player.hotkey[6+offset], game.player.hotkey[5+offset], game.player.hotkey[4+offset], game.player.hotkey[3+offset], game.player.hotkey[2+offset], game.player.hotkey[1+offset] };
-	local sustainableTalents = {}
-	for k, v in pairs(hotkeys) do
-		sustainableTalents[#sustainableTalents + 1] = v[2]
-	end
-	return sustainableTalents
+	return getHotbarTalents(36,10)
 end
 _M.getSustainableTalents = getSustainableTalents;
 
 local function getSustainTalents()
 --This function should grab the talents from the hotbar intended for shields (typically instant)
 -- at time of writing that should be the talent S1
-	local offset = 24 + 0
-	local count = 2
-	local sustainTalents = {}
-	for i=offset+1,offset+count do
-		if game.player.hotkey[i] and game.player.hotkey[i][1] == "talent" then
-			sustainTalents[#sustainTalents + 1] = game.player.hotkey[i][2]
-		end
-	end
-	return sustainTalents
+	return getHotbarTalents(24,2)
 end
 _M.getSustainTalents = getSustainTalents;
 
 local function getRecoveryTalents()
 --This function should grab the talents from the hotbar intended for combat
 -- at time of writing that should be the talent S2
-	local offset = 24 + 2
-	local count = 2
-	local recoveryTalents = {}
-	for i=offset+1,offset+count do
-		if game.player.hotkey[i] and game.player.hotkey[i][1] == "talent" then
-			recoveryTalents[#recoveryTalents + 1] = game.player.hotkey[i][2]
-		end
-	end
-	return recoveryTalents
+	return getHotbarTalents(24+2,2)
 end
 _M.getRecoveryTalents = getRecoveryTalents;
 
