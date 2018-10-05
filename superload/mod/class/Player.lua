@@ -509,9 +509,7 @@ function skoobot_act(noAction)
 				return
             end
         end
-        if not SAI_beginRest() then
-			return
-		end
+        return SAI_beginRest()
     elseif _M.skoobot.tempvals.state == SAI_STATE_EXPLORE then
 		if _M.skoobot.tempLoop.delta < 0 then
 			if #hostiles > 0 then
