@@ -408,6 +408,9 @@ local function activateSustained()
 		print("[Skoobot] [Sustain] Attempting to sustain: "..tid)
         if t.mode == "sustained" and game.player.sustain_talents[tid] == nil then
             if(SAI_useTalent(tid)) then
+				if game.player:enoughEnergy() and _M.ai_active then
+					skoobot_act(true)
+				end
 				return true
 			end
         end
