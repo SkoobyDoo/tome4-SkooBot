@@ -34,34 +34,66 @@ local SAI_STATE_EXPLORE = 11
 local SAI_STATE_HUNT = 12
 local SAI_STATE_FIGHT = 13
 
-_M.skoobot_ai_state = SAI_STATE_REST
-_M.skoobot_aiTurnCount = 0
-_M.skoobot_aiThinkCount = 0
+-- all skoobot data should be stored in this object on the player
+_M.skoobot = {}
 
-local SAI_LOWHEALTH_RATIO = 0.50
-local SAI_DO_NOTHING = false
+-- config values set to defaults. these should only change when the player changes them
+_M.skoobot.config = {}
+_M.skoobot.config.LOWHEALTH_RATIO = 0.50
 
-_M.AI_talentfailed = {}
+-- temporary values that need to stay on the player even between activations
+_M.skoobot.tempvals = {}
+_M.skoobot.tempvals.state = SAI_STATE_REST
+_M.skoobot.tempvals.do_nothing = false
+
+-- temporary values that should be recalculated from scratch each time the bot is turned on
+_M.skoobot.tempActivationInit = function()
+	local tempActivation = {}
+	tempActivation.turnCount = 0
+	tempActivation.unspentTotal = getUnspentTotal()
+	return tempActivation
+end
+--_M.skoobot.tempActivation = _M.skoobot.tempActivationInit() // handled on hotkey press
+
+-- temporary values that should be recalculated each time the bot loops
+-- each turn Loop should get moved to PrevLoop
+_M.skoobot.tempLoopInit = function()
+	local loop = {}
+	loop.thinkCount = 0
+	loop.talentfailed = {}
+	
+	print("[Skoobot] [Survival]  Evaluating life change...")
+	loop.delta = game.player.life - (_M.skoobot.tempPrevLoop and _M.skoobot.tempPrevLoop.life or game.player.life)
+	loop.life = game.player.life
+	if(abs(loop.delta) > 0) then
+		print("[Skoobot] [Survival] Delta detected! = "..loop.delta)
+	end
+	if (loop.delta < 0) and ( abs(loop.delta) / game.player.max_life >= _M.skoobot.config.LOWHEALTH_RATIO / 2) then
+		print("#RED#[Skoobot] [Survival] AI Stopped: Lost more than "..math.floor(100*_M.skoobot.config.LOWHEALTH_RATIO/2).."% life in one turn!")
+		return aiStop("#RED#AI Stopped: Lost more than "..math.floor(100*_M.skoobot.config.LOWHEALTH_RATIO/2).."%% life in one turn!")
+	end
+	return loop
+end
 
 -------------------------------------------------------
 
 local function aiStateString()
-    if _M.skoobot_ai_state == SAI_STATE_REST then
+    if _M.skoobot.tempvals.state == SAI_STATE_REST then
         return "SAI_STATE_REST"
-    elseif _M.skoobot_ai_state == SAI_STATE_EXPLORE then
+    elseif _M.skoobot.tempvals.state == SAI_STATE_EXPLORE then
         return "SAI_STATE_EXPLORE"
-    elseif _M.skoobot_ai_state == SAI_STATE_HUNT then
+    elseif _M.skoobot.tempvals.state == SAI_STATE_HUNT then
         return "SAI_STATE_HUNT"
-    elseif _M.skoobot_ai_state == SAI_STATE_FIGHT then
+    elseif _M.skoobot.tempvals.state == SAI_STATE_FIGHT then
         return "SAI_STATE_FIGHT"
     end
     return "Unknown State"
 end
 
-local function aiStop(msg)
+function aiStop(msg)
     _M.ai_active = false
-    _M.skoobot_ai_state = SAI_STATE_REST
-    _M.skoobot_aiTurnCount = 0
+    _M.skoobot.tempvals.state = SAI_STATE_REST
+	_M.skoobot.tempActivation = _M.skoobot.tempActivationInit()
     game.log((msg ~= nil and msg) or "#LIGHT_RED#AI Stopping!")
 end
 
@@ -77,7 +109,7 @@ local function validateRest(turns)
     if not turns or turns == 0 then
         game.log("#GOLD#AI Turns Rested: "..tostring(turns))
         -- TODO make sure this doesn't override damage taken
-        _M.skoobot_ai_state = SAI_STATE_EXPLORE
+        _M.skoobot.tempvals.state = SAI_STATE_EXPLORE
         game.player.resting = nil
         game.player:act()
     end
@@ -85,7 +117,7 @@ local function validateRest(turns)
 end
 
 local function SAI_useTalent(tid, _a, _b, _c, target)
-	if SAI_DO_NOTHING then
+	if _M.skoobot.tempvals.do_nothing then
 		game.log("[Skoobot] AI would use the talent "..game.player:getTalentFromId(tid).name..(target and target.name or ""))
 		return
 	end
@@ -93,7 +125,7 @@ local function SAI_useTalent(tid, _a, _b, _c, target)
 end
 
 local function SAI_passTurn()
-	if SAI_DO_NOTHING then
+	if _M.skoobot.tempvals.do_nothing then
 		game.log("[Skoobot] AI would pass a turn.")
 		return
 	end
@@ -101,7 +133,7 @@ local function SAI_passTurn()
 end
 
 local function SAI_movePlayer(x, y)
-	if SAI_DO_NOTHING then
+	if _M.skoobot.tempvals.do_nothing then
 		game.log("[Skoobot] AI would move to the "..game.level.map:compassDirection(x - game.player.x, y - game.player.y))
 		return
 	end
@@ -109,7 +141,7 @@ local function SAI_movePlayer(x, y)
 end
 
 local function SAI_beginExplore()
-	if SAI_DO_NOTHING then
+	if _M.skoobot.tempvals.do_nothing then
 		game.log("[Skoobot] AI would begin exploring.")
 		return
 	end
@@ -117,7 +149,7 @@ local function SAI_beginExplore()
 end
 
 local function SAI_beginRest()
-	if SAI_DO_NOTHING then
+	if _M.skoobot.tempvals.do_nothing then
 		game.log("[Skoobot] AI would begin resting.")
 		return false
 	end
@@ -149,7 +181,7 @@ local function checkForDebuffs()
 	return false
 end
 
-local function getUnspentTotal()
+function getUnspentTotal()
 	return game.player.unused_talents + game.player.unused_generics + game.player.unused_talents_types + game.player.unused_stats + game.player.unused_prodigies
 end
 
@@ -356,7 +388,7 @@ end
 
 local function lowHealth(enemy)
     -- TODO make threshold configurable
-    if game.player.life < game.player.max_life * SAI_LOWHEALTH_RATIO then
+    if game.player.life < game.player.max_life * _M.skoobot.config.LOWHEALTH_RATIO then
         if enemy ~= nil then
             local dir = game.level.map:compassDirection(enemy.x - game.player.x, enemy.y - game.player.y)
             local name = enemy.name
@@ -396,6 +428,11 @@ local function getLowestHealthEnemy(enemySet)
     return target
 end
 
+local function initLoopTempVars()
+	_M.skoobot.tempPrevLoop = _M.skoobot.tempLoop or _M.skoobot.tempLoopInit()
+	_M.skoobot.tempLoop = _M.skoobot.tempLoopInit()
+end
+
 local function skoobot_act(noAction)
 -- THIS FUNCTION CAUSES THE AI TO MAKE A SINGLE DECISION AND ACT UPON IT
 -- IT CALLS ITSELF RECURSIVELY TO PROCEED TO THE NEXT ACTION
@@ -404,38 +441,26 @@ local function skoobot_act(noAction)
         local low, msg = lowHealth(hostiles[0])
         if low then return aiStop(msg) end
         
-        _M.skoobot_ai_state = SAI_STATE_FIGHT
+        _M.skoobot.tempvals.state = SAI_STATE_FIGHT
     end
 	
 	if checkForDebuffs() then
 		return
 	end
 	
-	if game.player.sai_unspent_total ~= getUnspentTotal() then
+	if _M.skoobot.tempActivation.unspentTotal ~= getUnspentTotal() then
 		return aiStop("#RED#AI Stopped: Unspent points changed!")
 	end
 	
-	_M.skoobot_ai_lastlife = _M.skoobot_ai_lastlife~=nil and _M.skoobot_ai_lastlife or game.player.life
-	_M.skoobot_ai_deltalife = _M.skoobot_ai_deltalife~=nil and _M.skoobot_ai_deltalife or 0
-	print("[Skoobot] [Survival] Current Life = "..game.player.life)
-	print("[Skoobot] [Survival]  Last Life = ".._M.skoobot_ai_lastlife)
-	if not noAction then
-		_M.skoobot_aiThinkCount = 0
-		game.player.AI_talentfailed = {}
-		print("[Skoobot] [Survival]  Evaluating life change...")
-		_M.skoobot_ai_deltalife = game.player.life - _M.skoobot_ai_lastlife
-		_M.skoobot_ai_lastlife = game.player.life
-		if(abs(_M.skoobot_ai_deltalife) > 0) then
-			print("[Skoobot] [Survival] Delta detected! = ".._M.skoobot_ai_deltalife)
-		end
-		if (_M.skoobot_ai_deltalife < 0) and ( abs(_M.skoobot_ai_deltalife) / game.player.max_life >= SAI_LOWHEALTH_RATIO / 2) then
-			print("#RED#[Skoobot] [Survival] AI Stopped: Lost more than "..math.floor(100*SAI_LOWHEALTH_RATIO/2).."% life in one turn!")
-			return aiStop("#RED#AI Stopped: Lost more than "..math.floor(100*SAI_LOWHEALTH_RATIO/2).."%% life in one turn!")
+	if _M.skoobot.tempLoop == nil or (not noAction) then
+		initLoopTempVars()
+		if not _M.ai_active then
+			return
 		end
 	end
 	
-	_M.skoobot_aiThinkCount = _M.skoobot_aiThinkCount + 1
-	if _M.skoobot_aiThinkCount > 25 then
+	_M.skoobot.tempLoop.thinkCount = _M.skoobot.tempLoop.thinkCount + 1
+	if _M.skoobot.tempLoop.thinkCount > 25 then
 		return aiStop("#LIGHT_RED#AI Stopped: Number of attempts to calculate action exceeded maximum!")
 	end
     
@@ -445,9 +470,9 @@ local function skoobot_act(noAction)
     
     --game.log(aiStateString())
     
-	if _M.skoobot_ai_state == SAI_STATE_STOP then
+	if _M.skoobot.tempvals.state == SAI_STATE_STOP then
 		return
-    elseif _M.skoobot_ai_state == SAI_STATE_REST then
+    elseif _M.skoobot.tempvals.state == SAI_STATE_REST then
         local terrain = game.level.map(game.player.x, game.player.y, game.level.map.TERRAIN)
         if terrain.air_level and terrain.air_level < 0 then
             -- run to air
@@ -465,17 +490,17 @@ local function skoobot_act(noAction)
         if not SAI_beginRest() then
 			return
 		end
-    elseif _M.skoobot_ai_state == SAI_STATE_EXPLORE then
-		if _M.skoobot_ai_deltalife < 0 then
+    elseif _M.skoobot.tempvals.state == SAI_STATE_EXPLORE then
+		if _M.skoobot.tempLoop.delta < 0 then
 			if #hostiles > 0 then
-				_M.skoobot_ai_state = SAI_STATE_FIGHT
+				_M.skoobot.tempvals.state = SAI_STATE_FIGHT
 				return skoobot_act(true)
 			else
 				aiStop("#RED#AI stopped: took damage while exploring!")
 			end
 		end
         if game.player.air < 75 then
-            _M.skoobot_ai_state = SAI_STATE_REST
+            _M.skoobot.tempvals.state = SAI_STATE_REST
             return skoobot_act(true)
         end
         if game.level.map:checkEntity(game.player.x, game.player.y, engine.Map.TERRAIN, "change_level") then
@@ -484,16 +509,16 @@ local function skoobot_act(noAction)
         SAI_beginExplore()
         return
         
-    elseif _M.skoobot_ai_state == SAI_STATE_HUNT then
+    elseif _M.skoobot.tempvals.state == SAI_STATE_HUNT then
         -- TODO figure out how to hook takeHit() to get here
         -- then figure out if we can target the damage source
         -- or we have to randomwalk/flee
         
         -- for now:
-        _M.skoobot_ai_state = SAI_STATE_EXPLORE
+        _M.skoobot.tempvals.state = SAI_STATE_EXPLORE
         return skoobot_act(true)
     
-    elseif _M.skoobot_ai_state == SAI_STATE_FIGHT then
+    elseif _M.skoobot.tempvals.state == SAI_STATE_FIGHT then
         local targets = {}
         for index, enemy in pairs(hostiles) do
             -- attacking is a talent, so we don't need to add it as a choice
@@ -510,35 +535,35 @@ local function skoobot_act(noAction)
 			if #targets == 0 then
 				-- no enemies left in sight! fight's over
 				-- TODO OR WE'RE BLIND!!!!!!! this edge case will likely resolve itself once HUNT works.
-				_M.skoobot_ai_state = SAI_STATE_REST
+				_M.skoobot.tempvals.state = SAI_STATE_REST
 				return skoobot_act(true)
 			end
 			
-			if (_M.skoobot_ai_deltalife < 0) and ( abs(_M.skoobot_ai_deltalife) / game.player.max_life >= SAI_LOWHEALTH_RATIO / 4) then
+			if (_M.skoobot.tempLoop.delta < 0) and ( abs(_M.skoobot.tempLoop.delta) / game.player.max_life >= _M.skoobot.config.LOWHEALTH_RATIO / 4) then
 				talents = filterFailedTalents(getSustainTalents())
 				if #talents > 0 then
-					print("[Skoobot] [Survival] [Sustain] using sustain, lost more than "..math.floor(100*SAI_LOWHEALTH_RATIO/4).."% life in one turn!")
+					print("[Skoobot] [Survival] [Sustain] using sustain, lost more than "..math.floor(100*_M.skoobot.config.LOWHEALTH_RATIO/4).."% life in one turn!")
 					SAI_useTalent(talents[1])
 					if game.player:enoughEnergy() and _M.ai_active then
 						return skoobot_act(true)
 					end
 					return
 				else
-					print("[Skoobot] [Survival] [Sustain] Lost more than "..math.floor(100*SAI_LOWHEALTH_RATIO/4).."% life, but no sustain off cooldown!")
+					print("[Skoobot] [Survival] [Sustain] Lost more than "..math.floor(100*_M.skoobot.config.LOWHEALTH_RATIO/4).."% life, but no sustain off cooldown!")
 				end
 			end
 			
-			if (game.player.life / game.player.max_life <= 1 - SAI_LOWHEALTH_RATIO / 4) then
+			if (game.player.life / game.player.max_life <= 1 - _M.skoobot.config.LOWHEALTH_RATIO / 4) then
 				talents = filterFailedTalents(getRecoveryTalents())
 				if #talents > 0 then
-					print("[Skoobot] [Survival] [Recovery] using recovery, missing more than "..math.floor(100*SAI_LOWHEALTH_RATIO/4).."% life...")
+					print("[Skoobot] [Survival] [Recovery] using recovery, missing more than "..math.floor(100*_M.skoobot.config.LOWHEALTH_RATIO/4).."% life...")
 					SAI_useTalent(talents[1])
 					if game.player:enoughEnergy() and _M.ai_active then
 						return skoobot_act(true)
 					end
 					return
 				else
-					print("[Skoobot] [Survival] [Recovery] Missing more than "..math.floor(100*SAI_LOWHEALTH_RATIO/4).."% life, but no recovery off cooldown!")
+					print("[Skoobot] [Survival] [Recovery] Missing more than "..math.floor(100*_M.skoobot.config.LOWHEALTH_RATIO/4).."% life, but no recovery off cooldown!")
 				end
 			end
 			
@@ -610,9 +635,10 @@ function _M:skoobot_start()
     if game.zone.wilderness then
         return aiStop("#RED#Player AI cannot be used in the wilderness!")
     end
-	_M.sai_unspent_total = getUnspentTotal()
+	
+	_M.skoobot.tempActivation = _M.skoobot.tempActivationInit()
     _M.ai_active = true
-	_M.skoobot_ai_lastlife = game.player.life
+	initLoopTempVars()
     
     skoobot_act()
 end
@@ -627,9 +653,9 @@ function _M:skoobot_query()
         return aiStop("#RED#SkooBot cannot be used in the wilderness!")
     end
     
-	SAI_DO_NOTHING = true
+	_M.skoobot.tempvals.do_nothing = true
     skoobot_act(true)
-	SAI_DO_NOTHING = false
+	_M.skoobot.tempvals.do_nothing = false
 end
 
 function _M:skoobot_runonce()
@@ -653,11 +679,11 @@ function _M:act()
             aiStop("#RED#Player AI cancelled by wilderness zone!")
             return ret
         end
-        _M.skoobot_aiTurnCount = _M.skoobot_aiTurnCount + 1
-		print("[Skoobot] Player Act Number ".._M.skoobot_aiTurnCount)
+        _M.skoobot.tempActivation.turnCount = _M.skoobot.tempActivation.turnCount + 1
+		print("[Skoobot] Player Act Number ".._M.skoobot.tempActivation.turnCount)
         skoobot_act()
     end
-    if _M.skoobot_aiTurnCount > 1000 then
+    if _M.skoobot.tempActivation.turnCount > 1000 then
         aiStop("#LIGHT_RED#AI Disabled. AI acted for 1000 turns. Did it get stuck?")
     end
     return ret
