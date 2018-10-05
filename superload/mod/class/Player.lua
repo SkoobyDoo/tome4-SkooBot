@@ -606,6 +606,7 @@ function skoobot_act(noAction)
 			-- no legal target! let's get closer
 			local a = Astar.new(game.level.map, game.player)
 			local path = a:calc(game.player.x, game.player.y, targets[1].x, targets[1].y)
+			print("[Skoobot] [Combat] [Movement] Pathing towards "..targets[1].name)
 			local dir = getDirNum(game.player, targets[1])
 			local moved = false
 			
