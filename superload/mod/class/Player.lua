@@ -188,6 +188,12 @@ local function checkForDebuffs()
 	return false
 end
 
+function checkForAdditionalAction()
+	if game.player:enoughEnergy() and _M.ai_active then
+		return skoobot_act(true)
+	end
+end
+
 function getUnspentTotal()
 	return game.player.unused_talents + game.player.unused_generics + game.player.unused_talents_types + game.player.unused_stats + game.player.unused_prodigies
 end
@@ -415,9 +421,7 @@ local function activateSustained()
 		print("[Skoobot] [Sustain] Attempting to sustain: "..tid)
         if t.mode == "sustained" and game.player.sustain_talents[tid] == nil then
             if(SAI_useTalent(tid)) then
-				if game.player:enoughEnergy() and _M.ai_active then
-					skoobot_act(true)
-				end
+				checkForAdditionalAction()
 				return true
 			end
         end
@@ -497,6 +501,7 @@ function skoobot_act(noAction)
             if not moved and _M.ai_active then
                 return aiStop("#RED#AI stopped: Suffocating, no air in sight!")
 			else
+				checkForAdditionalAction()
 				return
             end
         end
@@ -557,9 +562,7 @@ function skoobot_act(noAction)
 				if #talents > 0 then
 					print("[Skoobot] [Survival] [Sustain] using sustain, lost more than "..math.floor(100*_M.skoobot.config.LOWHEALTH_RATIO/4).."% life in one turn!")
 					SAI_useTalent(talents[1])
-					if game.player:enoughEnergy() and _M.ai_active then
-						return skoobot_act(true)
-					end
+					checkForAdditionalAction()
 					return
 				else
 					print("[Skoobot] [Survival] [Sustain] Lost more than "..math.floor(100*_M.skoobot.config.LOWHEALTH_RATIO/4).."% life, but no sustain off cooldown!")
@@ -571,9 +574,7 @@ function skoobot_act(noAction)
 				if #talents > 0 then
 					print("[Skoobot] [Survival] [Recovery] using recovery, missing more than "..math.floor(100*_M.skoobot.config.LOWHEALTH_RATIO/4).."% life...")
 					SAI_useTalent(talents[1])
-					if game.player:enoughEnergy() and _M.ai_active then
-						return skoobot_act(true)
-					end
+					checkForAdditionalAction()
 					return
 				else
 					print("[Skoobot] [Survival] [Recovery] Missing more than "..math.floor(100*_M.skoobot.config.LOWHEALTH_RATIO/4).."% life, but no recovery off cooldown!")
@@ -593,9 +594,7 @@ function skoobot_act(noAction)
 					print("[Skoobot] [Combat] Using talent: "..tid.." on target "..enemy.name)
 					game.player:setTarget(enemy.actor)
 					SAI_useTalent(tid,nil,nil,nil,enemy.actor)
-					if game.player:enoughEnergy() and _M.ai_active then
-						return skoobot_act(true)
-					end
+					checkForAdditionalAction()
 					return
 				end
 			end
@@ -618,6 +617,7 @@ function skoobot_act(noAction)
 					--moved = game.player:attackOrMoveDir(dir)
 					return aiStop("#RED#[Skoobot] [Combat] [Movement] AI stopped: Movement along path to nearest enemy failed!")
 				end
+				checkForAdditionalAction()
 				return
 			end
 			if not moved then
