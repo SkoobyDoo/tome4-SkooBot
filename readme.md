@@ -8,11 +8,11 @@ as it uses the positioning of skills on your hotbar according to the following r
 * Recovery healing spells should be placed in S3/S4, these are used when the player is missing 25% life or more.
 
 Hotkey defaults are as follows and can be configured in the options screen:
-* Alt + F1* Toggle bot
-* Shift + F1* Disable bot (I recommend holding this when the bot is active as its difficult to press it at a time when the bot will listen)
-* Alt + F2* Single Step bot* This has the bot perform a single action without fully engaging autopilot.
+* Alt + F1 - Toggle bot
+* Shift + F1 - Disable bot (I recommend holding this when the bot is active as its difficult to press it at a time when the bot will listen)
+* Alt + F2 - Single Step bot* This has the bot perform a single action without fully engaging autopilot.
   Useful when you want to supervise the bot's behavior. Currently a bit buggy and may not run more than 25 times in a row.
-* Alt + F3* Query bot* This prompts the bot to declare the next action it would take, but should not perform any action.
+* Alt + F3 - Query bot* This prompts the bot to declare the next action it would take, but should not perform any action.
 This will probably not even get close to beating the game for you, and will frequently run into situations that it will not be able to act in.
 
 Upcoming Features (in no particular order):
