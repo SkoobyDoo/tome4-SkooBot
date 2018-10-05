@@ -607,8 +607,8 @@ function skoobot_act(noAction)
 				return aiStop("#RED#[Skoobot] [Combat] [Movement] AI stopped: Unable to calcuate path to nearest enemy!")
 			else
 				--game.log("#GREEN#move via path")
-				local moved = game.player:move(path[1].x, path[1].y)
-				if not moved then
+				local moved = SAI_movePlayer(path[1].x, path[1].y)
+				if not moved and not _M.skoobot.tempvals.do_nothing then
 					--game.log("#RED#[Skoobot] [Combat] Normal movement failed, trying beeline")
 					--moved = game.player:attackOrMoveDir(dir)
 					return aiStop("#RED#[Skoobot] [Combat] [Movement] AI stopped: Movement along path to nearest enemy failed!")
