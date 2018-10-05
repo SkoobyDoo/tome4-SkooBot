@@ -395,7 +395,7 @@ end
 local old_postUseTalent = _M.postUseTalent
 function _M:postUseTalent(talent, ret, silent)
     local result = old_postUseTalent(self, talent, ret, silent)
-    if not result then self.AI_talentfailed[talent.id] = true end
+    if not result and self.skoobot.tempLoop then self.skoobot.tempLoop.talentfailed[talent.id] = true end
     return result
 end
 
