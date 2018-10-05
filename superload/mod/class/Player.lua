@@ -93,7 +93,9 @@ end
 function aiStop(msg)
     _M.ai_active = false
     _M.skoobot.tempvals.state = SAI_STATE_REST
-	_M.skoobot.tempActivation = _M.skoobot.tempActivationInit()
+	_M.skoobot.tempActivation = nil
+	_M.skoobot.tempLoop = nil
+	_M.skoobot.tempPrevLoop = nil
     game.log((msg ~= nil and msg) or "#LIGHT_RED#AI Stopping!")
 end
 
@@ -371,7 +373,7 @@ local function filterFailedTalents(t)
     local out = {}
 
     for k, v in pairs(t) do
-		if not game.player:isTalentCoolingDown(game.player:getTalentFromId(v)) and game.player.AI_talentfailed[v] == nil then
+		if not game.player:isTalentCoolingDown(game.player:getTalentFromId(v)) and _M.skoobot.tempLoop.talentfailed[v] == nil then
             out[#out + 1] = v
         end
     end
@@ -436,9 +438,15 @@ local function initLoopTempVars()
 	_M.skoobot.tempLoop = _M.skoobot.tempLoopInit()
 end
 
-local function skoobot_act(noAction)
+function skoobot_act(noAction)
 -- THIS FUNCTION CAUSES THE AI TO MAKE A SINGLE DECISION AND ACT UPON IT
 -- IT CALLS ITSELF RECURSIVELY TO PROCEED TO THE NEXT ACTION
+    if _M.skoobot.tempActivation == nil then
+		-- this is a fresh run and should do a fresh start
+		_M.skoobot.tempActivation = _M.skoobot.tempActivationInit()
+		initLoopTempVars()
+	end
+	
     local hostiles = spotHostiles(game.player, true)
     if #hostiles > 0 then
         local low, msg = lowHealth(hostiles[0])
@@ -457,9 +465,6 @@ local function skoobot_act(noAction)
 	
 	if _M.skoobot.tempLoop == nil or (not noAction) then
 		initLoopTempVars()
-		if not _M.ai_active then
-			return
-		end
 	end
 	
 	_M.skoobot.tempLoop.thinkCount = _M.skoobot.tempLoop.thinkCount + 1
@@ -471,7 +476,7 @@ local function skoobot_act(noAction)
 		return
 	end
     
-    --game.log(aiStateString())
+    print("[Skoobot] [State] "..aiStateString())
     
 	if _M.skoobot.tempvals.state == SAI_STATE_STOP then
 		return
@@ -639,9 +644,7 @@ function _M:skoobot_start()
         return aiStop("#RED#Player AI cannot be used in the wilderness!")
     end
 	
-	_M.skoobot.tempActivation = _M.skoobot.tempActivationInit()
     _M.ai_active = true
-	initLoopTempVars()
     
     skoobot_act()
 end
@@ -655,10 +658,10 @@ function _M:skoobot_query()
     if game.zone.wilderness then
         return aiStop("#RED#SkooBot cannot be used in the wilderness!")
     end
-    
+	
 	_M.skoobot.tempvals.do_nothing = true
-    skoobot_act(true)
-	_M.skoobot.tempvals.do_nothing = false
+    skoobot_act()
+	_M.skoobot.tempvals.do_nothing = nil
 end
 
 function _M:skoobot_runonce()
@@ -670,8 +673,10 @@ function _M:skoobot_runonce()
     if game.zone.wilderness then
         return aiStop("#RED#SkooBot cannot be used in the wilderness!")
     end
-    
-    skoobot_act(true)
+	
+	_M.skoobot.tempvals.runonce = true
+    skoobot_act()
+	_M.skoobot.tempvals.runonce = nil
 end
 
 local old_act = _M.act
@@ -682,13 +687,20 @@ function _M:act()
             aiStop("#RED#Player AI cancelled by wilderness zone!")
             return ret
         end
-        _M.skoobot.tempActivation.turnCount = _M.skoobot.tempActivation.turnCount + 1
-		print("[Skoobot] Player Act Number ".._M.skoobot.tempActivation.turnCount)
         skoobot_act()
+		if _M.skoobot.tempActivation then
+			_M.skoobot.tempActivation.turnCount = _M.skoobot.tempActivation.turnCount + 1
+			print("[Skoobot] Player Act Number ".._M.skoobot.tempActivation.turnCount)
+			if _M.skoobot.tempActivation.turnCount > 1000 then
+				aiStop("#LIGHT_RED#AI Disabled. AI acted for 1000 turns. Did it get stuck?")
+			end
+		end
     end
-    if _M.skoobot.tempActivation.turnCount > 1000 then
-        aiStop("#LIGHT_RED#AI Disabled. AI acted for 1000 turns. Did it get stuck?")
-    end
+	if not _M.ai_active and not _M.skoobot.tempvals.runonce then
+		_M.skoobot.tempActivation = nil
+		_M.skoobot.tempLoop = nil
+		_M.skoobot.tempPrevLoop = nil
+	end
     return ret
 end
 
