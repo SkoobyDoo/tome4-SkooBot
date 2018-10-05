@@ -120,9 +120,10 @@ end
 
 local function SAI_useTalent(tid, _a, _b, _c, target)
 	if _M.skoobot.tempvals.do_nothing then
-		game.log("[Skoobot] AI would use the talent "..game.player:getTalentFromId(tid).name..(target and target.name or ""))
+		game.log("[Skoobot] AI would use the talent "..game.player:getTalentFromId(tid).name.." on target "..(target and target.name or ""))
 		return
 	end
+	print("[Skoobot] [Action] Using Talent "..game.player:getTalentFromId(tid).name.." on target "..(target and target.name or ""))
 	return game.player:useTalent(tid, _a, _b, _c, target)
 end
 
@@ -131,6 +132,7 @@ local function SAI_passTurn()
 		game.log("[Skoobot] AI would pass a turn.")
 		return
 	end
+	print("[Skoobot] [Action] Passing a turn.")
 	game.player:useEnergy()
 end
 
@@ -139,6 +141,7 @@ local function SAI_movePlayer(x, y)
 		game.log("[Skoobot] AI would move to the "..game.level.map:compassDirection(x - game.player.x, y - game.player.y))
 		return
 	end
+	print("[Skoobot] [Action] Moving to the "..game.level.map:compassDirection(x - game.player.x, y - game.player.y))
 	return game.player:move(x, y)
 end
 
@@ -147,6 +150,7 @@ local function SAI_beginExplore()
 		game.log("[Skoobot] AI would begin exploring.")
 		return
 	end
+	print("[Skoobot] [Action] Beginning to explore.")
 	game.player:autoExplore()
 end
 
@@ -155,6 +159,7 @@ local function SAI_beginRest()
 		game.log("[Skoobot] AI would begin resting.")
 		return false
 	end
+	print("[Skoobot] [Action] Beginning to rest.")
 	game.player:restInit(nil,nil,nil,nil,validateRest)
 	return true
 end
