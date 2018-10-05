@@ -477,7 +477,7 @@ local function skoobot_act(noAction)
 		return
     elseif _M.skoobot.tempvals.state == SAI_STATE_REST then
         local terrain = game.level.map(game.player.x, game.player.y, game.level.map.TERRAIN)
-        if terrain.air_level and terrain.air_level < 0 then
+        if terrain.air_level and terrain.air_level < 0 and not game.player.undead == 1 then
             -- run to air
             local path = getPathToAir(game.player)
             if path ~= nil then
