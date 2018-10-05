@@ -149,6 +149,10 @@ local function checkForDebuffs()
 	return false
 end
 
+local function getUnspentTotal()
+	return game.player.unused_talents + game.player.unused_generics + game.player.unused_talents_types + game.player.unused_stats + game.player.unused_prodigies
+end
+
 local function spotHostiles(self, actors_only)
 	local seen = {}
 	if not self.x then return seen end
@@ -407,6 +411,10 @@ local function skoobot_act(noAction)
 		return
 	end
 	
+	if game.player.sai_unspent_total ~= getUnspentTotal() then
+		return aiStop("#RED#AI Stopped: Unspent points changed!")
+	end
+	
 	_M.skoobot_ai_lastlife = _M.skoobot_ai_lastlife~=nil and _M.skoobot_ai_lastlife or game.player.life
 	_M.skoobot_ai_deltalife = _M.skoobot_ai_deltalife~=nil and _M.skoobot_ai_deltalife or 0
 	print("[Skoobot] [Survival] Current Life = "..game.player.life)
@@ -602,6 +610,7 @@ function _M:skoobot_start()
     if game.zone.wilderness then
         return aiStop("#RED#Player AI cannot be used in the wilderness!")
     end
+	_M.sai_unspent_total = getUnspentTotal()
     _M.ai_active = true
 	_M.skoobot_ai_lastlife = game.player.life
     
