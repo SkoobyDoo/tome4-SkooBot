@@ -125,6 +125,30 @@ local function SAI_beginRest()
 	return true
 end
 
+local function checkForDebuffs()
+	if game.player.confused == 1 then
+		aiStop("#RED#AI Stopped: Player is Confused!")
+		return true
+	end
+	if game.player.dazed == 1 then
+		aiStop("#RED#AI Stopped: Player is Dazed!")
+		return true
+	end
+	if game.player.stunned == 1 then
+		aiStop("#RED#AI Stopped: Player is Stunned!")
+		return true
+	end
+	if game.player.frozen == 1 then
+		aiStop("#RED#AI Stopped: Player is Frozen!")
+		return true
+	end
+	if game.player.sleep == 1 and not game.player.lucid_dreamer == 1 then
+		aiStop("#RED#AI Stopped: Player is Asleep!")
+		return true
+	end
+	return false
+end
+
 local function spotHostiles(self, actors_only)
 	local seen = {}
 	if not self.x then return seen end
@@ -378,6 +402,10 @@ local function skoobot_act(noAction)
         
         _M.skoobot_ai_state = SAI_STATE_FIGHT
     end
+	
+	if checkForDebuffs() then
+		return
+	end
 	
 	_M.skoobot_ai_lastlife = _M.skoobot_ai_lastlife~=nil and _M.skoobot_ai_lastlife or game.player.life
 	_M.skoobot_ai_deltalife = _M.skoobot_ai_deltalife~=nil and _M.skoobot_ai_deltalife or 0
