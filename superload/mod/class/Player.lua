@@ -474,6 +474,10 @@ function skoobot_act(noAction)
 	
 	if _M.skoobot.tempLoop == nil or (not noAction) then
 		initLoopTempVars()
+		if _M.skoobot.tempActivation == nil then
+			-- triggered a delta health alert and stopped ai
+			return
+		end
 	end
 	
 	_M.skoobot.tempLoop.thinkCount = _M.skoobot.tempLoop.thinkCount + 1
