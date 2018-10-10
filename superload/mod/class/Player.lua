@@ -249,26 +249,27 @@ function getUnspentTotal()
 end
 
 local function offensePowerLevel(power, critChance, critBonus, speed)
-	return power * (1+critChance) * (critBonus+1.5) * speed
+	return power * (1+critChance or 0) * (critBonus or 0+1.5) * speed or 1
 end
 
 local function weaponPowerLevels(actor)
 	local attackScores = {}
 	local temp = {}
-	temp.o = actor:getInven(actor.INVEN_MAINHAND)[1]
+	temp.o = actor:getInven(actor.INVEN_MAINHAND)
 	temp.ammo = table.get(actor:getInven("QUIVER"), 1)
 	temp.archery = temp.o
-		and temp.o.archery
+		and temp.o[1]
+		and temp.o[1].archery
 		and temp.ammo
-		and temp.ammo.archery_ammo == temp.o.archery
+		and temp.ammo.archery_ammo == temp.o[1].archery
 		and temp.ammo.combat
 		and (type ~= "offhand" or actor:attr("can_offshoot"))
 		and (type ~= "psionic" or actor:attr("psi_focus_combat")) -- ranged combat
 	
-	attackScores.melee = actor:combatDamage(actor.combat)
 	if temp.archery then
 		attackScores.ranged = actor:combatDamage(actor.combat, nil, temp.ammo.combat)
 	end
+	attackScores.melee = not attackScores.ranged and temp.o and temp.o[1] and temp.o[1].combat.dam or actor:combatDamage(actor.combat)
 	return attackScores
 end
 
