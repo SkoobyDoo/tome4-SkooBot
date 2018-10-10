@@ -18,6 +18,17 @@ local function abs(n)
     return n
 end
 
+-- Deep table copy to copy table values
+function copy(obj, seen)
+	if type(obj) ~= 'table' then return obj end
+	if seen and seen[obj] then return seen[obj] end
+	local s = seen or {}
+	local res = setmetatable({}, getmetatable(obj))
+	s[obj] = res
+	for k, v in pairs(obj) do res[copy(k, s)] = copy(v, s) end
+	return res
+end
+
 -------------------------------------------------------
 --================ VARIABLES ================--
 
@@ -209,6 +220,7 @@ local function spotHostiles(self, actors_only)
 			seen[#seen + 1] = {x=x,y=y,actor=actor, entity=actor, name=actor.name}
 		end
 	end, nil)
+	
 
 	if not actors_only then
 		-- Check for projectiles in line of sight
