@@ -86,7 +86,7 @@ _M.skoobot = {}
 -- config values set to defaults. these should only change when the player changes them
 _M.skoobot.config = {}
 _M.skoobot.config.LOWHEALTH_RATIO = 0.50
-_M.skoobot.config.MAX_INDIVIDUAL_POWER = 100
+_M.skoobot.config.MAX_INDIVIDUAL_POWER = 200
 _M.skoobot.config.MAX_DIFF_POWER = 10
 _M.skoobot.config.MAX_COMBINED_POWER = 100
 _M.skoobot.config.MAX_ENEMY_COUNT = 12
