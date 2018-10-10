@@ -29,6 +29,15 @@ function copy(obj, seen)
 	return res
 end
 
+-- Simplistic table merge for numeric indices only
+-- returnCopy determines if the resulting object should be a new object
+-- if not true will copy values of t2 into t1
+function merge(t1, t2, returnCopy)
+	local tr = returnCopy and copy(t1) or t1
+	for k,v in pairs(t2) do table.insert(tr, v) end
+	return tr
+end
+
 -------------------------------------------------------
 --================ VARIABLES ================--
 
