@@ -244,6 +244,47 @@ function getUnspentTotal()
 	return game.player.unused_talents + game.player.unused_generics + game.player.unused_talents_types + game.player.unused_stats + game.player.unused_prodigies
 end
 
+local function offensePowerLevel(power, critChance, critBonus, speed)
+	return power * (1+critChance) * (critBonus+1.5) * speed
+end
+
+local function weaponPowerLevels(actor)
+	local attackScores = {}
+	local temp = {}
+	temp.o = actor:getInven(actor.INVEN_MAINHAND)[1]
+	temp.ammo = table.get(actor:getInven("QUIVER"), 1)
+	temp.archery = temp.o
+		and temp.o.archery
+		and temp.ammo
+		and temp.ammo.archery_ammo == temp.o.archery
+		and temp.ammo.combat
+		and (type ~= "offhand" or actor:attr("can_offshoot"))
+		and (type ~= "psionic" or actor:attr("psi_focus_combat")) -- ranged combat
+	
+	attackScores.melee = actor:combatDamage(actor.combat)
+	if temp.archery then
+		attackScores.ranged = actor:combatDamage(actor.combat, nil, temp.ammo.combat)
+	end
+	return attackScores
+end
+
+local function evaluatePowerLevel(actor)
+	local scores = {}
+	scores.survivalScore = actor.life/10 * actor.life/actor.max_life
+	scores.physScore = offensePowerLevel(actor.combat_dam, actor.combat_generic_crit or 1+actor.combat_physcrit, actor.combat_critical_power,actor.combat_physspeed)
+	scores.spellScore = offensePowerLevel(actor.combat_spellpower, actor.combat_generic_crit or 1+actor.combat_spellcrit, actor.combat_critical_power,actor.combat_spellspeed)
+	scores.mindScore = offensePowerLevel(actor.combat_mindpower, actor.combat_generic_crit or 1+actor.combat_mindcrit, actor.combat_critical_power,actor.combat_mindspeed)
+	scores.defenseScore = actor.combat_def/2 + actor.combat_armor
+	scores.statScore = reduce(actor.inc_stats, function(a,b) return a+b end)
+	
+	scores.attackScores = weaponPowerLevels(actor)
+	
+	local ret = recSum(scores)
+	print("[Skoobot] [Powerlevel] Enemy - "..actor.name.." has power level "..ret)
+	return ret
+end
+_M.evaluatePowerLevel = evaluatePowerLevel
+
 local function spotHostiles(self, actors_only)
 	local seen = {}
 	if not self.x then return seen end
