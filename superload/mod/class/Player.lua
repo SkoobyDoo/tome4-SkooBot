@@ -38,6 +38,32 @@ function merge(t1, t2, returnCopy)
 	return tr
 end
 
+-- table reduction helper
+function reduce(list, fn) 
+    local acc
+    for k, v in ipairs(list) do
+        if 1 == k then
+            acc = v
+        else
+            acc = fn(acc, v)
+        end 
+    end 
+    return acc 
+end
+
+-- recursive object sum helper
+function recSum(list)
+	local sum = 0;
+	for _,v in pairs(list) do
+		if type(v) == "table" then
+			sum = sum + recSum(v)
+		else
+			sum = sum + v
+		end
+	end
+	return sum
+end
+
 -------------------------------------------------------
 --================ VARIABLES ================--
 
