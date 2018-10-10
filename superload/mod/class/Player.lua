@@ -456,6 +456,10 @@ function skoobot_act(noAction)
 		initLoopTempVars()
 	end
 	
+	if #game.dialogs > 0 then
+		return aiStop("#RED# Ai Stopped: Dialog shown on screen: "..game.dialogs[#game.dialogs].title)
+	end
+	
     local hostiles = spotHostiles(game.player, true)
     if #hostiles > 0 then
         local low, msg = lowHealth(hostiles[0])
