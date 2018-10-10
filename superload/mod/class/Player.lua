@@ -86,6 +86,10 @@ _M.skoobot = {}
 -- config values set to defaults. these should only change when the player changes them
 _M.skoobot.config = {}
 _M.skoobot.config.LOWHEALTH_RATIO = 0.50
+_M.skoobot.config.MAX_INDIVIDUAL_POWER = 100
+_M.skoobot.config.MAX_DIFF_POWER = 10
+_M.skoobot.config.MAX_COMBINED_POWER = 100
+_M.skoobot.config.MAX_ENEMY_COUNT = 12
 
 -- temporary values that need to stay on the player even between activations
 _M.skoobot.tempvals = {}
@@ -297,6 +301,16 @@ local function spotHostiles(self, actors_only)
 		end
 	end, nil)
 	
+	game.player.skoobot.tempLoop.sumVisibleEnemyPower = 0
+	game.player.skoobot.tempLoop.maxVisibleEnemyPower = 0
+	game.player.skoobot.tempLoop.enemyCount = #seen
+	for _,a in ipairs(seen) do
+		local power = evaluatePowerLevel(a.actor)
+		game.player.skoobot.tempLoop.sumVisibleEnemyPower = game.player.skoobot.tempLoop.sumVisibleEnemyPower + power
+		if game.player.skoobot.tempLoop.maxVisibleEnemyPower < power then
+			game.player.skoobot.tempLoop.maxVisibleEnemyPower = power
+		end
+	end
 
 	if not actors_only then
 		-- Check for projectiles in line of sight
@@ -500,6 +514,23 @@ local function lowHealth(enemy)
     end
 end
 
+local function checkPowerLevel()
+	local myPowerLevel = evaluatePowerLevel(game.player)
+	if _M.skoobot.tempLoop.maxVisibleEnemyPower > _M.skoobot.config.MAX_INDIVIDUAL_POWER then
+		return true,"Max enemy power level too high: ".._M.skoobot.tempLoop.maxVisibleEnemyPower
+	end
+	if _M.skoobot.tempLoop.maxVisibleEnemyPower > myPowerLevel + _M.skoobot.config.MAX_DIFF_POWER then
+		return true,"Max enemy power level too much stronger than player: ".._M.skoobot.tempLoop.maxVisibleEnemyPower.." > "..myPowerLevel
+	end
+	if _M.skoobot.tempLoop.sumVisibleEnemyPower > _M.skoobot.config.MAX_COMBINED_POWER then
+		return true,"Combined enemy power level too high: ".._M.skoobot.tempLoop.sumVisibleEnemyPower
+	end
+	if _M.skoobot.tempLoop.enemyCount > _M.skoobot.config.MAX_ENEMY_COUNT then
+		return true,"Too many enemies in sight: ".._M.skoobot.tempLoop.enemyCount
+	end
+	return false
+end
+
 -- TODO add configurability, at least for Meditation
 local function activateSustained()
 -- returns true if anything was sustained, else returns false.
@@ -555,6 +586,11 @@ function skoobot_act(noAction)
         
         _M.skoobot.tempvals.state = SAI_STATE_FIGHT
     end
+	
+	local vegeta,powermsg = checkPowerLevel()
+	if vegeta then
+		return aiStop("#RED# AI Stopped: "..powermsg)
+	end
 	
 	if checkForDebuffs() then
 		return
