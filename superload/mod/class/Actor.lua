@@ -80,16 +80,16 @@ function _M:tooltip(x, y, seen_by)
 		local scores = self:evaluatePowerScores()
 		for k,v in pairs(scores) do
 			if type(v) ~= "table" then
-				result:add("#FFD700#"..k.."#FFFFFF#: "..v, true)
+				result:add("#FFD700#"..k.."#FFFFFF#: "..string.format("%1.2f",v), true)
 			else
 				for k2,v2 in pairs(v) do
-					result:add("#FFD700#Weapon "..k2.."#FFFFFF#: "..v2, true)
+					result:add("#FFD700#Weapon "..k2.."#FFFFFF#: "..string.format("%1.2f",v2), true)
 				end
 			end
 		end
-		result:add("#FFD700#Power Level#FFFFFF#: "..recSum(scores), {"color", "WHITE"})
+		result:add("#FFD700#Power Level#FFFFFF#: "..string.format("%d",recSum(scores)), {"color", "WHITE"})
 	else
-		result:add("#FFD700#Power Level#FFFFFF#: "..self:evaluatePowerLevel(), {"color", "WHITE"})
+		result:add("#FFD700#Power Level#FFFFFF#: "..string.format("%d",self:evaluatePowerLevel()), {"color", "WHITE"})
 	end
     return result
 end
