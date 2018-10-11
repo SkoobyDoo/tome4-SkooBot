@@ -18,52 +18,6 @@ local function abs(n)
     return n
 end
 
--- Deep table copy to copy table values
-function copy(obj, seen)
-	if type(obj) ~= 'table' then return obj end
-	if seen and seen[obj] then return seen[obj] end
-	local s = seen or {}
-	local res = setmetatable({}, getmetatable(obj))
-	s[obj] = res
-	for k, v in pairs(obj) do res[copy(k, s)] = copy(v, s) end
-	return res
-end
-
--- Simplistic table merge for numeric indices only
--- returnCopy determines if the resulting object should be a new object
--- if not true will copy values of t2 into t1
-function merge(t1, t2, returnCopy)
-	local tr = returnCopy and copy(t1) or t1
-	for k,v in pairs(t2) do table.insert(tr, v) end
-	return tr
-end
-
--- table reduction helper
-function reduce(list, fn) 
-    local acc
-    for k, v in ipairs(list) do
-        if 1 == k then
-            acc = v
-        else
-            acc = fn(acc, v)
-        end 
-    end 
-    return acc 
-end
-
--- recursive object sum helper
-function recSum(list)
-	local sum = 0;
-	for _,v in pairs(list) do
-		if type(v) == "table" then
-			sum = sum + recSum(v)
-		else
-			sum = sum + v
-		end
-	end
-	return sum
-end
-
 -------------------------------------------------------
 --================ VARIABLES ================--
 
@@ -248,48 +202,6 @@ function getUnspentTotal()
 	return game.player.unused_talents + game.player.unused_generics + game.player.unused_talents_types + game.player.unused_stats + game.player.unused_prodigies
 end
 
-local function offensePowerLevel(power, critChance, critBonus, speed)
-	return power * (1+critChance or 0) * (critBonus or 0+1.5) * speed or 1
-end
-
-local function weaponPowerLevels(actor)
-	local attackScores = {}
-	local temp = {}
-	temp.o = actor:getInven(actor.INVEN_MAINHAND)
-	temp.ammo = table.get(actor:getInven("QUIVER"), 1)
-	temp.archery = temp.o
-		and temp.o[1]
-		and temp.o[1].archery
-		and temp.ammo
-		and temp.ammo.archery_ammo == temp.o[1].archery
-		and temp.ammo.combat
-		and (type ~= "offhand" or actor:attr("can_offshoot"))
-		and (type ~= "psionic" or actor:attr("psi_focus_combat")) -- ranged combat
-	
-	if temp.archery then
-		attackScores.ranged = actor:combatDamage(actor.combat, nil, temp.ammo.combat)
-	end
-	attackScores.melee = not attackScores.ranged and temp.o and temp.o[1] and temp.o[1].combat.dam or actor:combatDamage(actor.combat)
-	return attackScores
-end
-
-local function evaluatePowerLevel(actor)
-	local scores = {}
-	scores.survivalScore = actor.life/10 * actor.life/actor.max_life
-	scores.physScore = offensePowerLevel(actor.combat_dam, actor.combat_generic_crit or 1+actor.combat_physcrit, actor.combat_critical_power,actor.combat_physspeed)
-	scores.spellScore = offensePowerLevel(actor.combat_spellpower, actor.combat_generic_crit or 1+actor.combat_spellcrit, actor.combat_critical_power,actor.combat_spellspeed)
-	scores.mindScore = offensePowerLevel(actor.combat_mindpower, actor.combat_generic_crit or 1+actor.combat_mindcrit, actor.combat_critical_power,actor.combat_mindspeed)
-	scores.defenseScore = actor.combat_def/2 + actor.combat_armor
-	scores.statScore = reduce(actor.inc_stats, function(a,b) return a+b end)
-	
-	scores.attackScores = weaponPowerLevels(actor)
-	
-	local ret = recSum(scores)
-	print("[Skoobot] [Powerlevel] Enemy - "..actor.name.." has power level "..ret)
-	return ret
-end
-_M.evaluatePowerLevel = evaluatePowerLevel
-
 local function spotHostiles(self, actors_only)
 	local seen = {}
 	if not self.x then return seen end
@@ -306,7 +218,7 @@ local function spotHostiles(self, actors_only)
 	game.player.skoobot.tempLoop.maxVisibleEnemyPower = 0
 	game.player.skoobot.tempLoop.enemyCount = #seen
 	for _,a in ipairs(seen) do
-		local power = evaluatePowerLevel(a.actor)
+		local power = a.actor:evaluatePowerLevel()
 		game.player.skoobot.tempLoop.sumVisibleEnemyPower = game.player.skoobot.tempLoop.sumVisibleEnemyPower + power
 		if game.player.skoobot.tempLoop.maxVisibleEnemyPower < power then
 			game.player.skoobot.tempLoop.maxVisibleEnemyPower = power
@@ -516,7 +428,7 @@ local function lowHealth(enemy)
 end
 
 local function checkPowerLevel()
-	local myPowerLevel = evaluatePowerLevel(game.player)
+	local myPowerLevel = game.player:evaluatePowerLevel()
 	if _M.skoobot.tempLoop.maxVisibleEnemyPower > _M.skoobot.config.MAX_INDIVIDUAL_POWER then
 		return true,"Max enemy power level too high: ".._M.skoobot.tempLoop.maxVisibleEnemyPower
 	end
