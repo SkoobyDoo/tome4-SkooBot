@@ -78,18 +78,18 @@ function _M:tooltip(x, y, seen_by)
 	local result = old_tooltip(self, x, y, seen_by)
 	if core.key.modState("ctrl") then
 		local scores = self:evaluatePowerScores()
+		result:add(true, "#FFD700#Power Level#FFFFFF#: "..string.format("%d",recSum(scores)), {"color", "WHITE"})
 		for k,v in pairs(scores) do
 			if type(v) ~= "table" then
-				result:add("#FFD700#"..k.."#FFFFFF#: "..string.format("%1.2f",v), true)
+				result:add(true, " #FFD700#"..k.."#FFFFFF#: "..string.format("%1.2f",v))
 			else
 				for k2,v2 in pairs(v) do
-					result:add("#FFD700#Weapon "..k2.."#FFFFFF#: "..string.format("%1.2f",v2), true)
+					result:add(true, " #FFD700#Weapon "..k2.."#FFFFFF#: "..string.format("%1.2f",v2))
 				end
 			end
 		end
-		result:add("#FFD700#Power Level#FFFFFF#: "..string.format("%d",recSum(scores)), {"color", "WHITE"})
 	else
-		result:add("#FFD700#Power Level#FFFFFF#: "..string.format("%d",self:evaluatePowerLevel()), {"color", "WHITE"})
+		result:add(true, "#FFD700#Power Level#FFFFFF#: "..string.format("%d",self:evaluatePowerLevel()), {"color", "WHITE"})
 	end
     return result
 end
