@@ -18,6 +18,10 @@ local function abs(n)
     return n
 end
 
+local function checkConfig(str)
+	return config.settings.tome.SkooBot and config.settings.tome.SkooBot[str]
+end
+
 -------------------------------------------------------
 --================ VARIABLES ================--
 
@@ -36,14 +40,6 @@ local SAI_STATE_FIGHT = 13
 
 -- all skoobot data should be stored in this object on the player
 _M.skoobot = {}
-
--- config values set to defaults. these should only change when the player changes them
-_M.skoobot.config = {}
-_M.skoobot.config.LOWHEALTH_RATIO = 0.50
-_M.skoobot.config.MAX_INDIVIDUAL_POWER = 200
-_M.skoobot.config.MAX_DIFF_POWER = 10
-_M.skoobot.config.MAX_COMBINED_POWER = 500
-_M.skoobot.config.MAX_ENEMY_COUNT = 12
 
 -- temporary values that need to stay on the player even between activations
 _M.skoobot.tempvals = {}
@@ -72,9 +68,9 @@ _M.skoobot.tempLoopInit = function()
 	if(abs(loop.delta) > 0) then
 		print("[Skoobot] [Survival] Delta detected! = "..loop.delta)
 	end
-	if (loop.delta < 0) and ( abs(loop.delta) / game.player.max_life >= _M.skoobot.config.LOWHEALTH_RATIO / 2) then
-		print("#RED#[Skoobot] [Survival] AI Stopped: Lost more than "..math.floor(100*_M.skoobot.config.LOWHEALTH_RATIO/2).."% life in one turn!")
-		return aiStop("#RED#AI Stopped: Lost more than "..math.floor(100*_M.skoobot.config.LOWHEALTH_RATIO/2).."%% life in one turn!")
+	if (loop.delta < 0) and ( abs(loop.delta) / game.player.max_life >= checkConfig("LOWHEALTH_RATIO") / 2) then
+		print("#RED#[Skoobot] [Survival] AI Stopped: Lost more than "..math.floor(100*checkConfig("LOWHEALTH_RATIO")/2).."% life in one turn!")
+		return aiStop("#RED#AI Stopped: Lost more than "..math.floor(100*checkConfig("LOWHEALTH_RATIO")/2).."%% life in one turn!")
 	end
 	return loop
 end
@@ -416,7 +412,7 @@ end
 
 local function lowHealth(enemy)
     -- TODO make threshold configurable
-    if game.player.life < game.player.max_life * _M.skoobot.config.LOWHEALTH_RATIO then
+    if game.player.life < game.player.max_life * checkConfig("LOWHEALTH_RATIO") then
         if enemy ~= nil then
             local dir = game.level.map:compassDirection(enemy.x - game.player.x, enemy.y - game.player.y)
             local name = enemy.name
@@ -429,16 +425,16 @@ end
 
 local function checkPowerLevel()
 	local myPowerLevel = game.player:evaluatePowerLevel()
-	if _M.skoobot.tempLoop.maxVisibleEnemyPower > _M.skoobot.config.MAX_INDIVIDUAL_POWER then
+	if _M.skoobot.tempLoop.maxVisibleEnemyPower > checkConfig("MAX_INDIVIDUAL_POWER") then
 		return true,"Max enemy power level too high: ".._M.skoobot.tempLoop.maxVisibleEnemyPower
 	end
-	if _M.skoobot.tempLoop.maxVisibleEnemyPower > myPowerLevel + _M.skoobot.config.MAX_DIFF_POWER then
+	if _M.skoobot.tempLoop.maxVisibleEnemyPower > myPowerLevel + checkConfig("MAX_DIFF_POWER") then
 		return true,"Max enemy power level too much stronger than player: ".._M.skoobot.tempLoop.maxVisibleEnemyPower.." > "..myPowerLevel
 	end
-	if _M.skoobot.tempLoop.sumVisibleEnemyPower > _M.skoobot.config.MAX_COMBINED_POWER then
+	if _M.skoobot.tempLoop.sumVisibleEnemyPower > checkConfig("MAX_COMBINED_POWER") then
 		return true,"Combined enemy power level too high: ".._M.skoobot.tempLoop.sumVisibleEnemyPower
 	end
-	if _M.skoobot.tempLoop.enemyCount > _M.skoobot.config.MAX_ENEMY_COUNT then
+	if _M.skoobot.tempLoop.enemyCount > checkConfig("MAX_ENEMY_COUNT") then
 		return true,"Too many enemies in sight: ".._M.skoobot.tempLoop.enemyCount
 	end
 	return false
@@ -600,27 +596,27 @@ function skoobot_act(noAction)
 				return skoobot_act(true)
 			end
 			
-			if (_M.skoobot.tempLoop.delta < 0) and ( abs(_M.skoobot.tempLoop.delta) / game.player.max_life >= _M.skoobot.config.LOWHEALTH_RATIO / 4) then
+			if (_M.skoobot.tempLoop.delta < 0) and ( abs(_M.skoobot.tempLoop.delta) / game.player.max_life >= checkConfig("LOWHEALTH_RATIO") / 4) then
 				talents = filterFailedTalents(getSustainTalents())
 				if #talents > 0 then
-					print("[Skoobot] [Survival] [Sustain] using sustain, lost more than "..math.floor(100*_M.skoobot.config.LOWHEALTH_RATIO/4).."% life in one turn!")
+					print("[Skoobot] [Survival] [Sustain] using sustain, lost more than "..math.floor(100*checkConfig("LOWHEALTH_RATIO")/4).."% life in one turn!")
 					SAI_useTalent(talents[1])
 					checkForAdditionalAction()
 					return
 				else
-					print("[Skoobot] [Survival] [Sustain] Lost more than "..math.floor(100*_M.skoobot.config.LOWHEALTH_RATIO/4).."% life, but no sustain off cooldown!")
+					print("[Skoobot] [Survival] [Sustain] Lost more than "..math.floor(100*checkConfig("LOWHEALTH_RATIO")/4).."% life, but no sustain off cooldown!")
 				end
 			end
 			
-			if (game.player.life / game.player.max_life <= 1 - _M.skoobot.config.LOWHEALTH_RATIO / 4) then
+			if (game.player.life / game.player.max_life <= 1 - checkConfig("LOWHEALTH_RATIO") / 4) then
 				talents = filterFailedTalents(getRecoveryTalents())
 				if #talents > 0 then
-					print("[Skoobot] [Survival] [Recovery] using recovery, missing more than "..math.floor(100*_M.skoobot.config.LOWHEALTH_RATIO/4).."% life...")
+					print("[Skoobot] [Survival] [Recovery] using recovery, missing more than "..math.floor(100*checkConfig("LOWHEALTH_RATIO")/4).."% life...")
 					SAI_useTalent(talents[1])
 					checkForAdditionalAction()
 					return
 				else
-					print("[Skoobot] [Survival] [Recovery] Missing more than "..math.floor(100*_M.skoobot.config.LOWHEALTH_RATIO/4).."% life, but no recovery off cooldown!")
+					print("[Skoobot] [Survival] [Recovery] Missing more than "..math.floor(100*checkConfig("LOWHEALTH_RATIO")/4).."% life, but no recovery off cooldown!")
 				end
 			end
 			
