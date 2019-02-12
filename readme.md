@@ -15,21 +15,20 @@ Hotkey defaults are as follows and can be configured in the options screen:
 * Alt + F3 - Query bot - This prompts the bot to declare the next action it would take, but should not perform any action.
 This will probably not even get close to beating the game for you, and will frequently run into situations that it will not be able to act in.
 
-Changes in 0.0.2:
-* Bot stops when it levels up
-* Bot stops when detecting most major debuffs (Stun, daze, sleep, blind, confuse)
-* Less complaining when underwater as undead
-* Fixed a few sources of unnecessary bot stops due to logic errors
-* Fixed some logic surrounding runOnce
-* Fixed an error where Query would actually take an action
+Changes in 0.0.3:
+* Bot stops when certain number of enemies are spotted
+* Bot now evaluates the "Power Level" of visible enemies (visible in enemy tooltips)
+* Bot stops when a powerful enough enemy is observed
+* Bot stops when an enemy more powerful than you by a margin is observed
+* Bot stops when the combined power level of visible enemies exceeds a threshold
+* Above thresholds are all now configurable from the menu! Check the [SkooBot] tab under Game Options
+* These options are saved globally so multiple concurrent playthroughs will have to just deal with it for now.
 
 Upcoming Features (in no particular order):
 * Separate UI for configuring combat rotation to let you keep your bar the way you want
 * Companion addons and an integration with this bot to auto-spend levelup points and optimize equipment so you don't have to
-* Ability to make bot stop based on enemies spotted (# of enemies, highest tier of enemy spotted e.g. pause on rare/unique/boss, # of levels above you, etc)
 * Recognize area damage and avoid standing in it
-* Make items a valid choice for combat rotation. Currently items on the hotbar are ignored.
-* Pause bot when a dialogue is shown
+* Make activatable items a valid choice for combat rotation. Currently items on the hotbar are ignored.
 * UI to enable or disable any of the various features I've added so you can customize the way the bot performs.
 * Anything else I think of.
 * BUG FIXES!
