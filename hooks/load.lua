@@ -87,11 +87,11 @@ class:bindHook("GameOptions:generateList", function(self, data)
 			"Bot pauses when under this life percent. Also will pause when losing half this percent life in a single round.")
 		createNumericalOption("MAX_INDIVIDUAL_POWER", "Max enemy power level",
 			"Pauses the bot when an enemy with a power level over this amount is spotted.")
-		createNumericalOption("MAX_DIFF_POWER", "Shader: Healing Inhibition",
+		createNumericalOption("MAX_DIFF_POWER", "Maximum Individual Enemy Power",
 			"Pauses the bot when an enemy with a power level this much higher than yours is spotted.")
-		createNumericalOption("MAX_COMBINED_POWER", "Shader: Buff Inhibition",
+		createNumericalOption("MAX_COMBINED_POWER", "Maximum Combined Enemy Power",
 			"Pauses the bot when the combined power level of visible enemies is over this amount.")
-		createNumericalOption("MAX_ENEMY_COUNT", "Shader: Petrified",
+		createNumericalOption("MAX_ENEMY_COUNT", "Maximum Enemy Count",
 			"Pauses the bot when this many enemies is spotted.")
 	end
 end)
