@@ -728,6 +728,10 @@ local old_act = _M.act
 function _M:act()
     local ret = old_act(game.player)
     if (not game.player.running) and (not game.player.resting) and _M.ai_active then
+		if not game.player:enoughEnergy() then
+			print("[WARN] [Skoobot] [Bugfix] Player act called with insufficient energy for action. Returning.")
+			return
+		end
         if game.zone.wilderness then
             aiStop("#RED#Player AI cancelled by wilderness zone!")
             return ret
