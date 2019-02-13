@@ -53,4 +53,4 @@ While the prerequisites above must be satisfied prior to having your pull reques
   *`uriToOpen` instead of `URIToOpen`
 
 [beginner]:https://github.com/search?l=&q=is%3Aopen+is%3Aissue+label%3Abeginner+repo%3Askoobydoo%2Ftome4-skoobot&type=Issues
-[help-wanted]:https://github.com/search?q=is%3Aopen+is%3Aissue+label%3Ahelp-wanted+repo%3Askoobydoo%2Ftome4-skoobot&type=Issues
+[help-wanted]:https://github.com/search?utf8=%E2%9C%93&q=repo%3Askoobydoo%2Ftome4-skoobot+label%3Ahelp-wanted+state%3Aopen&type=Issues&ref=advsearch&l=&l=
