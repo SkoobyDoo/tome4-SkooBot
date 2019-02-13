@@ -2,7 +2,7 @@ long_name = "SkooBot"
 short_name = "skoobot"
 for_module = "tome"
 version = {1,5,10}
-addon_version = {0,0,3}
+addon_version = {0,0,4}
 weight = 1000
 author = { "SkoobyDoo (theskoobydoo@gmail.com)" }
 description = [[Basic bot designed to automate some of the tedium of starting a new character.
@@ -21,6 +21,11 @@ Hotkey defaults are as follows and can be configured in the options screen:
   Useful when you want to supervise the bot's behavior. Currently a bit buggy and may not run more than 25 times in a row.
 * Alt + F3 - Query bot - This prompts the bot to declare the next action it would take, but should not perform any action.
 This will probably not even get close to beating the game for you, and will frequently run into situations that it will not be able to act in.
+
+Changes in 0.0.4:
+* Skoobot will no longer gleefully drown your characters or crash itself with recursion overflow when in water
+* Fixed (I think) the bug where skoobot fails to path to an enemy in combat
+* Reduced spam when holding the hotkey to disable skoobot (S+F1)
 
 Changes in 0.0.3:
 * Bot stops when certain number of enemies are spotted
