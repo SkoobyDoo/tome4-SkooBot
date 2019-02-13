@@ -531,6 +531,9 @@ function skoobot_act(noAction)
 	if _M.skoobot.tempvals.state == SAI_STATE_STOP then
 		return
     elseif _M.skoobot.tempvals.state == SAI_STATE_REST then
+		if game.player.air < 50 then
+			return aiStop("#RED#AI stopped: Attempting to rest while under half breath!")
+		end
         local terrain = game.level.map(game.player.x, game.player.y, game.level.map.TERRAIN)
         if terrain.air_level and terrain.air_level < 0 and not game.player.undead == 1 then
             -- run to air
