@@ -44,3 +44,10 @@ defineAction{
 	group = "actions",
 	name = "Ask SkooBot for action",
 }
+
+defineAction{
+	default = { "sym:_F2:false:true:false:false" },
+	type = "SKOOBOT_MENU",
+	group = "actions",
+	name = "Open the SkooBot Menu",
+}
