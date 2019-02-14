@@ -7,6 +7,9 @@ local TextzoneList = require "engine.ui.TextzoneList"
 local Separator = require "engine.ui.Separator"
 local GetQuantity = require "engine.dialogs.GetQuantity"
 
+local CustomActionDialog = require "mod.dialogs.CustomActionDialog"
+local PickOneDialog = require "mod.dialogs.PickOneDialog"
+
 module(..., package.seeall, class.inherit(Dialog))
 
 function _M:init(actor)
@@ -61,15 +64,44 @@ end
 
 function _M:use(item)
 	if not item then return end
-
-	-- Update the multiplier
-	if not self.actor.ai_talents then
-		self.actor.ai_talents = {}
+	
+	if item.addnew then
+		local talentlist = {}
+		for tid,_ in pairs(game.player.talents) do
+			talentlist[#talentlist+1] = {name=self.actor:getTalentFromId(tid).name:capitalize(),value=tid}
+		end
+		
+		local d = PickOneDialog.new("Pick a talent to add", talentlist,
+			function(value)
+				self.actor.skoobot.autotalents[#self.actor.skoobot.autotalents+1] = {tid=value, usetype='', priority=1}
+				-- todo prompt user for usetype and priority
+				self:generateList()
+			end )
+		game:registerDialog(d)
+		return
+	else
+		local d = CustomActionDialog.new("Modify Talent Use: "..item.name, {
+			{name="Select Use Type",action=function(value)
+				local d = PickOneDialog.new("Pick use type for "..item.name, 
+					{{name='Combat',value='Combat'},{name='Sustain',value='Sustain'},
+						{name='Recovery',value='Recovery'},{name='Damage Prevention',value='DamagePrevention'}},
+					function(value)
+						print("[Skoobot] [BotTalentDialog] Changing use type for "..item.name.." to "..value)
+						self.actor.skoobot.autotalents[item.index].usetype=value
+						self:generateList()
+					end )
+				game:registerDialog(d)
+			end},
+			{name="Select Priority",action=function(value)
+				game:registerDialog(GetQuantity.new("Enter priority value", "Higher = use first", item.priority, nil, function(value)
+						print("[Skoobot] [BotTalentDialog] Changing priority for "..item.name.." to "..tostring(value))
+						self.actor.skoobot.autotalents[item.index].priority=value
+						self:generateList()
+				end), 1)
+			end},
+		})
+		game:registerDialog(d)
 	end
-	game:registerDialog(GetQuantity.new("Enter the talent weight multiplier", "0 is off, 1 is normal", item.multiplier, nil, function(qty)
-			self.actor.ai_talents[item.tid] = qty
-			self:generateList()
-	end), 1)
 end
 
 function _M:select(item)
@@ -80,13 +112,24 @@ end
 
 function _M:generateList()
 	local list = {}
-	for tid, lvl in pairs(self.actor.talents) do
-		local t = self.actor:getTalentFromId(tid)
+	if not self.actor.skoobot then self.actor.skoobot = {} end
+	if not self.actor.skoobot.autotalents then self.actor.skoobot.autotalents = {} end
+	for index, info in ipairs(self.actor.skoobot.autotalents) do
+		local t = self.actor:getTalentFromId(info.tid)
 		if t.mode ~= "passive" and t.hide ~= "true" then
-			local multiplier = self.actor.ai_talents and self.actor.ai_talents[tid] or 1
-			list[#list+1] = {id=#list+1, name=t.name:capitalize(), multiplier=multiplier, tid=tid, desc=self.actor:getTalentFullDescription(t)}
+			list[#list+1] = {
+				id=#list+1,
+				index=index,
+				name=t.name:capitalize(),
+				tid=info.tid,
+				usetype=info.usetype,
+				priority=info.priority,
+				desc=self.actor:getTalentFullDescription(t)
+			}
 		end
 	end
+	
+	list[#list+1] = {id=#list+1, name="#GOLD#Add a new talent...", desc="Select this option to add a new skill to SkooBot's repertoire.", usetype="", priority="", addnew=true}
 
 	local chars = {}
 	for i, v in ipairs(list) do
