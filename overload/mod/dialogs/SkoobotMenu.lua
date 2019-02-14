@@ -27,6 +27,9 @@ end
 local menuActions = {
 	skillconfig = function()
 		print("[SkooBot] [Menu] skillconfig menu action chosen.")
+		local d = require("mod.dialogs.BotTalentDialog").new(game.player)
+		
+		game:registerDialog(d)
 	end
 }
 
