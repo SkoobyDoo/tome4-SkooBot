@@ -24,17 +24,24 @@ function _M:on_register()
 	game:onTickEnd(function() self.key:unicodeInput(true) end)
 end
 
+local menuActions = {
+	skillconfig = function()
+		print("[SkooBot] [Menu] skillconfig menu action chosen.")
+	end
+}
+
 function _M:use(item)
 	if not item then return end
 	game:unregisterDialog(self)
-	
 	print("[SkooBot] [Menu] Menu option chosen: '"..item.name.."'	with order code: "..item.order)
+	
+	if (menuActions[item.order]) then menuActions[item.order]() end
 end
 
 function _M:generateList()
 	local list = {
-		{1,name="Menu Option 1",order="item1"},
-		{2,name="Menu Option 2",order="item2"}
+		{1,name="Set Skill Usage",order="skillconfig"},
+		{2,name="Cancel",order="donothing"}
 	}
 
 	local chars = {}
