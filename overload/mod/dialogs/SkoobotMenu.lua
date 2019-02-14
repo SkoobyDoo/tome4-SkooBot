@@ -1,21 +1,3 @@
--- ToME - Tales of Maj'Eyal
--- Copyright (C) 2009 - 2018 Nicolas Casalini
---
--- This program is free software: you can redistribute it and/or modify
--- it under the terms of the GNU General Public License as published by
--- the Free Software Foundation, either version 3 of the License, or
--- (at your option) any later version.
---
--- This program is distributed in the hope that it will be useful,
--- but WITHOUT ANY WARRANTY; without even the implied warranty of
--- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
--- GNU General Public License for more details.
---
--- You should have received a copy of the GNU General Public License
--- along with this program.  If not, see <http://www.gnu.org/licenses/>.
---
--- Nicolas Casalini "DarkGod"
--- darkgod@te4.org
 
 require "engine.class"
 require "engine.ui.Dialog"
@@ -23,19 +5,9 @@ local List = require "engine.ui.List"
 
 module(..., package.seeall, class.inherit(engine.ui.Dialog))
 
-local orders = {
-	escort_rest = {-100, function() return "Wait a few turns" end},
-	escort_portal = {-99, function() return "Where is the portal?" end},
-	target = {1, function() return ("Set the target [current: %s]") end},
-	behavior = {2, function() return ("Set behavior [current: %s]") end},
-	anchor = {3, function() return ("Set the leash anchor [current: %s]") end},
-	leash = {4, function() return ("Set the leash distance [current: %d]") end},
-	talents = {5, function() return ("Define tactical talents usage") end},
-}
-
 function _M:init()
 	self:generateList()
-	engine.ui.Dialog.init(self, "Order: 66", 1, 1)
+	engine.ui.Dialog.init(self, "SkooBot Menu", 1, 1)
 
 	local list = List.new{width=400, nb_items=#self.list, list=self.list, fct=function(item) self:use(item) end}
 
@@ -55,21 +27,15 @@ end
 function _M:use(item)
 	if not item then return end
 	game:unregisterDialog(self)
-
-	--game.party:giveOrder(self.actor, item.order)
+	
+	print("[SkooBot] [Menu] Menu option chosen: '"..item.name.."'	with order code: "..item.order)
 end
 
 function _M:generateList()
-	local list = {}
-
-	local odors = {'target','behavior','anchor','leash','talents'}
-	for _,o in ipairs(odors) do
-		print(o)
-		if orders[o] then
-			list[#list+1] = {name=orders[o][2](), order=o, sort=orders[o][1]}
-		end
-	end
-	table.sort(list, function(a,b) return a.sort < b.sort end)
+	local list = {
+		{1,name="Menu Option 1",order="item1"},
+		{2,name="Menu Option 2",order="item2"}
+	}
 
 	local chars = {}
 	for i, v in ipairs(list) do
