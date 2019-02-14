@@ -16,16 +16,18 @@ function _M:init(actor)
 	local vsep = Separator.new{dir="horizontal", size=self.ih - 10}
 	local halfwidth = math.floor((self.iw - vsep.w)/2)
 	self.c_tut = Textzone.new{width=halfwidth, height=1, auto_height=true, no_color_bleed=true, text=([[
-%s is listening attentively, and wants to know what talents to use.
-You can modify the tactical weights of various talents to increase or decrease their use.  The weights are multiplicative (zero will turn the talent off) and relative (changing everything to a weight of 2 will not alter how talents are used relative to each other).
-Word travels fast in Maj'Eyal, and if %s is a summon all future summons of the same type will remember your preferences.
-]]):format(actor.name:capitalize(), actor.name)}
+Add talents to this dialog to allow SkooBot to use them. The parameters are as follows:
+* Name - The talent name
+* Use Type - The category of use for this entry. Possible values are Combat, Sustain, Recovery and Damage Prevention.
+* Priority - The priority with which SkooBot will attempt to use this skill when its logic determines it needs to use a skill of the given use type. Higher priority means a skill will be preferred over others.
+]])}
 	self.c_desc = TextzoneList.new{width=halfwidth, height=self.ih, no_color_bleed=true}
 
 	self.c_list = ListColumns.new{width=halfwidth, height=self.ih - 10, sortable=true, scrollbar=true, columns={
-		{name="", width={20,"fixed"}, display_prop="char", sort="id"},
-		{name="Talent Name", width=72, display_prop="name", sort="name"},
-		{name="Weight", width=20, display_prop="multiplier", sort="multiplier"},
+		{name="", width={30,"fixed"}, display_prop="char", sort="id"},
+		{name="Talent Name", width=70, display_prop="name", sort="name"},
+		{name="Use Type", width=20, display_prop="usetype", sort="usetype"},
+		{name="Priority", width=12, display_prop="priority", sort="priority"},
 	}, list={}, fct=function(item) self:use(item) end, select=function(item, sel) self:select(item) end}
 
 	self:generateList()
@@ -48,11 +50,6 @@ Word travels fast in Maj'Eyal, and if %s is a summon all future summons of the s
 	}
 	self.key:addBinds{
 		EXIT = function()
-			-- Store the ai_talents in the summoner
-			if self.actor.summoner then
-				self.actor.summoner.stored_ai_talents = self.actor.summoner.stored_ai_talents or {}
-				self.actor.summoner.stored_ai_talents[self.actor.name] = self.actor.ai_talents
-			end
 			game:unregisterDialog(self)
 		end,
 	}
