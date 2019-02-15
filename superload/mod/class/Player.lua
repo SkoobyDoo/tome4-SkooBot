@@ -70,7 +70,7 @@ _M.skoobot.tempLoopInit = function()
 	end
 	if (loop.delta < 0) and ( abs(loop.delta) / game.player.max_life >= checkConfig("LOWHEALTH_RATIO") / 2) then
 		print("#RED#[Skoobot] [Survival] AI Stopped: Lost more than "..math.floor(100*checkConfig("LOWHEALTH_RATIO")/2).."% life in one turn!")
-		return aiStop("#RED#AI Stopped: Lost more than "..math.floor(100*checkConfig("LOWHEALTH_RATIO")/2).."%% life in one turn!")
+		if game.player:tryStop("LIFE_BIGLOSS", "#RED#AI Stopped: Lost more than "..math.floor(100*checkConfig("LOWHEALTH_RATIO")/2).."%% life in one turn!") then return end
 	end
 	return loop
 end
@@ -97,6 +97,14 @@ function aiStop(msg)
 	_M.skoobot.tempLoop = nil
 	_M.skoobot.tempPrevLoop = nil
     game.log((msg ~= nil and msg) or "#LIGHT_RED#AI Stopping!")
+end
+
+_M.tryStop = function(self, stoptype, msg)
+	--check if stoptype is IGNORED
+	local stoptype = self:getStopCondition(stoptype).stoptype
+	if stoptype == "IGNORE" then print("[Skoobot] [StopConditions] [HIGHLIGHT] Ignoring stop condition: "..stoptype) return false end
+	aiStop(msg)
+	return true
 end
 
 _M.getStopConditionList = function()
@@ -538,7 +546,7 @@ function skoobot_act(noAction)
     local hostiles = spotHostiles(game.player, true)
     if #hostiles > 0 then
         local low, msg = lowHealth(hostiles[0])
-        if low then return aiStop(msg) end
+        if low then if game.player:tryStop("LIFE_LOWLIFE", msg) then return end end
         
         _M.skoobot.tempvals.state = SAI_STATE_FIGHT
     end
