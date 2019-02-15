@@ -99,6 +99,39 @@ function aiStop(msg)
     game.log((msg ~= nil and msg) or "#LIGHT_RED#AI Stopping!")
 end
 
+_M.getStopConditionList = function()
+	if not game.player.skoobotstopconditions then game.player.skoobotstopconditions = {
+		{label="Debuff: STUNNED", code="DEBUFF_STUNNED", stoptype="WARN"},
+		{label="Debuff: CONFUSED", code="DEBUFF_CONFUSED", stoptype="WARN"},
+		{label="Debuff: DAZED", code="DEBUFF_DAZED", stoptype="WARN"},
+		{label="Debuff: FROZEN", code="DEBUFF_FROZEN", stoptype="WARN"},
+		{label="Debuff: ASLEEP", code="DEBUFF_ASLEEP", stoptype="WARN"},
+		
+		{label="Life: BIGLOSS", code="LIFE_BIGLOSS", stoptype="WARN"},
+		{label="Life: LOWLIFE", code="LIFE_LOWLIFE", stoptype="STOP"},
+		
+		{label="Power Level: ENEMYCOUNT", code="SCOUTER_ENEMYCOUNT", stoptype="STOP"},
+		{label="Power Level: BIGENEMY", code="SCOUTER_BIGENEMY", stoptype="STOP"},
+		{label="Power Level: STRONGERENEMY", code="SCOUTER_STRONGERENEMY", stoptype="STOP"},
+		{label="Power Level: CROWDPOWER", code="SCOUTER_CROWDPOWER", stoptype="STOP"},
+		--TODO go through dialog types and add auto dialog closing for certain types like quest results, lore etc
+	} end
+	return game.player.skoobotstopconditions
+end
+
+_M.getStopCondition = function(self, getcode)
+	self:getStopConditionList() -- to ensure list exists
+	for index,v in ipairs(game.player.skoobotstopconditions) do
+		if v.code == getcode then return v, index end
+	end
+	print("[SkooBot] [StopConditions] [ERROR] Attempt to fetch nonexistent stop condition: "..getcode)
+end
+
+_M.setStopCondition = function(self, code, stoptype)
+	local v,index = self:getStopCondition(code)
+	game.player.skoobotstopconditions[index] = {label = v.label, code=code, stoptype=stoptype}
+end
+
 local function getDirNum(src, dst)
     local dx = dst.x - src.x
     if dx ~= 0 then dx = dx/dx end

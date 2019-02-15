@@ -3,6 +3,8 @@ require "engine.class"
 require "engine.ui.Dialog"
 local List = require "engine.ui.List"
 
+local PickOneDialog = require "mod.dialogs.PickOneDialog"
+
 module(..., package.seeall, class.inherit(engine.ui.Dialog))
 
 function _M:init()
@@ -30,7 +32,30 @@ local menuActions = {
 		local d = require("mod.dialogs.BotTalentDialog").new(game.player)
 		
 		game:registerDialog(d)
-	end
+	end,
+	botstopconditions = function()
+		print("[SkooBot] [Menu] botstopconditions menu action chosen.")
+
+		local stopConditions = game.player:getStopConditionList()
+		local dialoglist = {}
+		for _,v in ipairs(stopConditions) do
+			dialoglist[#dialoglist + 1] = {name=v.label.." - "..v.stoptype, value=v.code}
+		end
+		
+		local d = PickOneDialog.new("Pick a condition to customize", dialoglist,
+			function(PICK_stopcondition)
+				local d = PickOneDialog.new("Pick a stop condition for: "..PICK_stopcondition,
+					{{name="IGNORE", value="IGNORE"},{name="WARN", value="WARN"},{name="STOP", value="STOP"}},
+					function(PICK_stoptype)
+						-- find condition matching PICK_stopcondition and change its stoptype to PICK_stoptype
+						game.player:setStopCondition(PICK_stopcondition,PICK_stoptype)
+					end
+				)
+				game:registerDialog(d)
+			end
+		)
+		game:registerDialog(d)
+	end,
 }
 
 function _M:use(item)
@@ -44,7 +69,8 @@ end
 function _M:generateList()
 	local list = {
 		{1,name="Set Skill Usage",order="skillconfig"},
-		{2,name="Cancel",order="donothing"}
+		{2,name="Activate/Deactivate Bot Stop Conditions",order="botstopconditions"},
+		{999,name="Cancel",order="donothing"}
 	}
 
 	local chars = {}
