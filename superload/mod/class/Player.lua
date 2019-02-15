@@ -118,11 +118,12 @@ _M.getStopConditionList = function()
 		{label="Life: BIGLOSS", code="LIFE_BIGLOSS", stoptype="WARN"},
 		{label="Life: LOWLIFE", code="LIFE_LOWLIFE", stoptype="STOP"},
 		
+		{label="Dialog: LORE", code="DIALOG_LORE", stoptype="IGNORE"},
+		
 		{label="Power Level: ENEMYCOUNT", code="SCOUTER_ENEMYCOUNT", stoptype="STOP"},
 		{label="Power Level: BIGENEMY", code="SCOUTER_BIGENEMY", stoptype="STOP"},
 		{label="Power Level: STRONGERENEMY", code="SCOUTER_STRONGERENEMY", stoptype="STOP"},
 		{label="Power Level: CROWDPOWER", code="SCOUTER_CROWDPOWER", stoptype="STOP"},
-		--TODO go through dialog types and add auto dialog closing for certain types like quest results, lore etc
 	} end
 	return game.player.skoobotstopconditions
 end
@@ -539,8 +540,17 @@ function skoobot_act(noAction)
 		initLoopTempVars()
 	end
 	
-	if #game.dialogs > 0 then
-		return aiStop("#RED# Ai Stopped: Dialog shown on screen: "..game.dialogs[#game.dialogs].title)
+	while #game.dialogs > 0 do
+		if string.match(game.dialogs[#game.dialogs].title, "Lore found:") then
+			-- this is a lore dialog, check if player has configured to ignore
+			if game.player:tryStop("DIALOG_LORE","#RED# Ai Stopped: Dialog shown on screen: "..game.dialogs[#game.dialogs].title) then
+				return
+			else
+				game:unregisterDialog(game.dialogs[#game.dialogs])
+			end
+		else
+			aiStop("#RED# Ai Stopped: Dialog shown on screen: "..game.dialogs[#game.dialogs].title)
+		end
 	end
 	
     local hostiles = spotHostiles(game.player, true)
