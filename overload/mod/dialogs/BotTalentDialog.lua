@@ -76,6 +76,20 @@ function _M:use(item)
 				self.actor.skoobot.autotalents[#self.actor.skoobot.autotalents+1] = {tid=value, usetype='', priority=1}
 				-- todo prompt user for usetype and priority
 				self:generateList()
+				local d = PickOneDialog.new("Pick use type for "..self.actor:getTalentFromId(value).name:capitalize(), 
+					{{name='Combat',value='Combat'},{name='Sustain',value='Sustain'},
+						{name='Recovery',value='Recovery'},{name='Damage Prevention',value='DamagePrevention'}},
+					function(value2)
+						print("[Skoobot] [BotTalentDialog] Changing use type for "..self.actor:getTalentFromId(value).name:capitalize().." to "..value2)
+						self.actor.skoobot.autotalents[#self.actor.skoobot.autotalents].usetype=value2
+						self:generateList()
+						game:registerDialog(GetQuantity.new("Enter priority value", "Higher = use first", self.actor.skoobot.autotalents[#self.actor.skoobot.autotalents].priority, nil, function(value3)
+							print("[Skoobot] [BotTalentDialog] Changing priority for "..self.actor:getTalentFromId(value).name:capitalize().." to "..tostring(value3))
+							self.actor.skoobot.autotalents[#self.actor.skoobot.autotalents].priority=value3
+							self:generateList()
+						end), 1)
+					end )
+				game:registerDialog(d)
 			end )
 		game:registerDialog(d)
 		return
