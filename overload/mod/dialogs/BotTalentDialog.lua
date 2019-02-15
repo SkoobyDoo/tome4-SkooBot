@@ -113,6 +113,10 @@ function _M:use(item)
 						self:generateList()
 				end), 1)
 			end},
+			{name="Remove Entry",action=function(value)
+				table.remove(self.actor.skoobotautotalents,item.index)
+				self:generateList()
+			end},
 		})
 		game:registerDialog(d)
 	end
