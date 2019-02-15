@@ -320,11 +320,11 @@ local function getHotbarTalents(offset, count)
 end
 
 local function getAutoTalents(usetype)
---This function should grab the combat talents from skoobot.autotalents[] where usetype=usetype
+--This function should grab the combat talents from skoobotautotalents[] where usetype=usetype
 	local talents = {}
-	if not game.player.skoobot or not game.player.skoobot.autotalents then return talents end
+	if not game.player.skoobot or not game.player.skoobotautotalents then return talents end
 	local tbl = {}
-	for _,v in pairs(game.player.skoobot.autotalents) do
+	for _,v in pairs(game.player.skoobotautotalents) do
 		table.insert(tbl, v)
 	end
 	table.sort(tbl, function(a,b) return a.priority > b.priority end)
@@ -338,25 +338,25 @@ local function getAutoTalents(usetype)
 end
 
 local function getCombatTalents()
---This function should grab the talents from skoobot.autotalents[] where usetype=Combat
+--This function should grab the talents from skoobotautotalents[] where usetype=Combat
 	return getAutoTalents("Combat")
 end
 _M.getCombatTalents = getCombatTalents;
 
 local function getSustainableTalents()
---This function should grab the talents from skoobot.autotalents[] where usetype=Sustain
+--This function should grab the talents from skoobotautotalents[] where usetype=Sustain
 	return getAutoTalents("Sustain")
 end
 _M.getSustainableTalents = getSustainableTalents;
 
 local function getSustainTalents()
---This function should grab the talents from skoobot.autotalents[] where usetype=DamagePrevention
+--This function should grab the talents from skoobotautotalents[] where usetype=DamagePrevention
 	return getAutoTalents("DamagePrevention")
 end
 _M.getSustainTalents = getSustainTalents;
 
 local function getRecoveryTalents()
---This function should grab the talents from skoobot.autotalents[] where usetype=Recovery
+--This function should grab the talents from skoobotautotalents[] where usetype=Recovery
 	return getAutoTalents("Recovery")
 end
 _M.getRecoveryTalents = getRecoveryTalents;
