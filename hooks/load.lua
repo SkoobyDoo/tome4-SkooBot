@@ -27,6 +27,11 @@ class:bindHook("ToME:run", function(self, data)
 		    local Player = require "mod.class.Player"
 		    game.log("#GOLD#SkooBot Query requested!")
 			Player.skoobot_query()
+		end,
+		SKOOBOT_MENU = function()
+			local d = require("mod.dialogs.SkoobotMenu").new()
+		    game.log("#GOLD#SkooBot Menu requested!")
+			game:registerDialog(d)
 		end
 	}
 end)

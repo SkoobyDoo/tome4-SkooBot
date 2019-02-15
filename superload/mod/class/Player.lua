@@ -319,31 +319,45 @@ local function getHotbarTalents(offset, count)
 	return talents
 end
 
+local function getAutoTalents(usetype)
+--This function should grab the combat talents from skoobotautotalents[] where usetype=usetype
+	local talents = {}
+	if not game.player.skoobot or not game.player.skoobotautotalents then return talents end
+	local tbl = {}
+	for _,v in pairs(game.player.skoobotautotalents) do
+		table.insert(tbl, v)
+	end
+	table.sort(tbl, function(a,b) return a.priority > b.priority end)
+	
+	for index,entry in ipairs(tbl) do
+		if entry.usetype == usetype then
+			talents[#talents + 1] = entry.tid
+		end
+	end
+	return talents
+end
+
 local function getCombatTalents()
---This function should grab the talents from the hotbar intended for combat
--- at time of writing that should be the talents in 1,2,3..0 in order
-	return getHotbarTalents(0,10)
+--This function should grab the talents from skoobotautotalents[] where usetype=Combat
+	return getAutoTalents("Combat")
 end
 _M.getCombatTalents = getCombatTalents;
 
 local function getSustainableTalents()
---This function should grab the talents from the hotbar intended for combat
--- at time of writing that should be the talents in A1,A2,A3..A0 in order
-	return getHotbarTalents(36,10)
+--This function should grab the talents from skoobotautotalents[] where usetype=Sustain
+	return getAutoTalents("Sustain")
 end
 _M.getSustainableTalents = getSustainableTalents;
 
 local function getSustainTalents()
---This function should grab the talents from the hotbar intended for shields (typically instant)
--- at time of writing that should be the talent S1
-	return getHotbarTalents(24,2)
+--This function should grab the talents from skoobotautotalents[] where usetype=DamagePrevention
+	return getAutoTalents("DamagePrevention")
 end
 _M.getSustainTalents = getSustainTalents;
 
 local function getRecoveryTalents()
---This function should grab the talents from the hotbar intended for combat
--- at time of writing that should be the talent S2
-	return getHotbarTalents(24+2,2)
+--This function should grab the talents from skoobotautotalents[] where usetype=Recovery
+	return getAutoTalents("Recovery")
 end
 _M.getRecoveryTalents = getRecoveryTalents;
 
@@ -672,8 +686,7 @@ function skoobot_act(noAction)
 			-- everything is on cooldown, what do?
 			-- pass a turn!
 			print("[Skoobot] [Combat] All Combat talents on cooldown. Waiting.")
-			SAI_passTurn()
-			return
+			return aiStop("#RED#[Skoobot] [Combat] [Movement] All Combat talents on cooldown!\nHave you configured talent usage? (Shift+F2 by default)")
 		end
 		
 		
