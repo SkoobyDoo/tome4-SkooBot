@@ -686,7 +686,7 @@ function skoobot_act(noAction)
 			-- everything is on cooldown, what do?
 			-- pass a turn!
 			print("[Skoobot] [Combat] All Combat talents on cooldown. Waiting.")
-			return aiStop("#RED#[Skoobot] [Combat] [Movement] All Combat talents on cooldown!\nHave you configured talent usage?")
+			return aiStop("#RED#[Skoobot] [Combat] [Movement] All Combat talents on cooldown!\nHave you configured talent usage? (Shift+F2 by default)")
 		end
 		
 		
