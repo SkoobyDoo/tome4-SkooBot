@@ -32,7 +32,7 @@ local _M = loadPrevious(...)
 -------------------------------------------------------
 
 local function offensePowerLevel(power, critChance, critBonus, speed)
-	return power * (1+critChance or 0) * (critBonus or 0+1.5) * speed or 1
+	return (power * (critChance * ((critBonus or 0) + 1.5)) + 1 ) * speed or 1
 end
 
 local function weaponPowerLevels(actor)
@@ -59,9 +59,9 @@ end
 function _M:evaluatePowerScores()
 	local scores = {}
 	scores.survivalScore = self.life/10 * self.life/self.max_life
-	scores.physScore = offensePowerLevel(self.combat_dam, self.combat_generic_crit or 1+self.combat_physcrit, self.combat_critical_power,self.combat_physspeed)
-	scores.spellScore = offensePowerLevel(self.combat_spellpower, self.combat_generic_crit or 1+self.combat_spellcrit, self.combat_critical_power,self.combat_spellspeed)
-	scores.mindScore = offensePowerLevel(self.combat_mindpower, self.combat_generic_crit or 1+self.combat_mindcrit, self.combat_critical_power,self.combat_mindspeed)
+	scores.physScore = offensePowerLevel(self.combat_dam, self.combat_generic_crit or self.combat_physcrit and (self.combat_physcrit+9)/100, self.combat_critical_power,self.combat_physspeed)
+	scores.spellScore = offensePowerLevel(self.combat_spellpower, self.combat_generic_crit or self.combat_spellcrit and (self.combat_spellcrit+4)/100, self.combat_critical_power,self.combat_spellspeed)
+	scores.mindScore = offensePowerLevel(self.combat_mindpower, self.combat_generic_crit or self.combat_mindcrit and (self.combat_mindcrit+4)/100, self.combat_critical_power,self.combat_mindspeed)
 	scores.defenseScore = self.combat_def/2 + self.combat_armor
 	scores.statScore = reduce(self.inc_stats, function(a,b) return a+b end)
 	
