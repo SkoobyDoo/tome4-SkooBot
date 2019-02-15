@@ -207,23 +207,23 @@ end
 
 local function checkForDebuffs()
 	if game.player.confused == 1 then
-		aiStop("#RED#AI Stopped: Player is Confused!")
+		game.player:tryStop("DEBUFF_CONFUSED", "#RED#AI Stopped: Player is Confused!")
 		return true
 	end
 	if game.player.dazed == 1 then
-		aiStop("#RED#AI Stopped: Player is Dazed!")
+		game.player:tryStop("DEBUFF_DAZED", "#RED#AI Stopped: Player is Dazed!")
 		return true
 	end
 	if game.player.stunned == 1 then
-		aiStop("#RED#AI Stopped: Player is Stunned!")
+		game.player:tryStop("DEBUFF_STUNNED", "#RED#AI Stopped: Player is Stunned!")
 		return true
 	end
 	if game.player.frozen == 1 then
-		aiStop("#RED#AI Stopped: Player is Frozen!")
+		game.player:tryStop("DEBUFF_FROZEN", "#RED#AI Stopped: Player is Frozen!")
 		return true
 	end
 	if game.player.sleep == 1 and not game.player.lucid_dreamer == 1 then
-		aiStop("#RED#AI Stopped: Player is Asleep!")
+		game.player:tryStop("DEBUFF_ASLEEP", "#RED#AI Stopped: Player is Asleep!")
 		return true
 	end
 	return false
@@ -481,16 +481,16 @@ end
 local function checkPowerLevel()
 	local myPowerLevel = game.player:evaluatePowerLevel()
 	if _M.skoobot.tempLoop.maxVisibleEnemyPower > checkConfig("MAX_INDIVIDUAL_POWER") then
-		return true,"Max enemy power level too high: ".._M.skoobot.tempLoop.maxVisibleEnemyPower
+		return game.player:tryStop("SCOUTER_BIGENEMY", "Max enemy power level too high: ".._M.skoobot.tempLoop.maxVisibleEnemyPower)
 	end
 	if _M.skoobot.tempLoop.maxVisibleEnemyPower > myPowerLevel + checkConfig("MAX_DIFF_POWER") then
-		return true,"Max enemy power level too much stronger than player: ".._M.skoobot.tempLoop.maxVisibleEnemyPower.." > "..myPowerLevel
+		return game.player:tryStop("SCOUTER_STRONGERENEMY", "Max enemy power level too much stronger than player: ".._M.skoobot.tempLoop.maxVisibleEnemyPower.." > "..myPowerLevel)
 	end
 	if _M.skoobot.tempLoop.sumVisibleEnemyPower > checkConfig("MAX_COMBINED_POWER") then
-		return true,"Combined enemy power level too high: ".._M.skoobot.tempLoop.sumVisibleEnemyPower
+		return game.player:tryStop("SCOUTER_CROWDPOWER", "Combined enemy power level too high: ".._M.skoobot.tempLoop.sumVisibleEnemyPower)
 	end
 	if _M.skoobot.tempLoop.enemyCount > checkConfig("MAX_ENEMY_COUNT") then
-		return true,"Too many enemies in sight: ".._M.skoobot.tempLoop.enemyCount
+		return game.player:tryStop("SCOUTER_ENEMYCOUNT", "Too many enemies in sight: ".._M.skoobot.tempLoop.enemyCount)
 	end
 	return false
 end
@@ -551,9 +551,8 @@ function skoobot_act(noAction)
         _M.skoobot.tempvals.state = SAI_STATE_FIGHT
     end
 	
-	local vegeta,powermsg = checkPowerLevel()
-	if vegeta then
-		return aiStop("#RED# AI Stopped: "..powermsg)
+	if checkPowerLevel() then
+		return
 	end
 	
 	if checkForDebuffs() then
