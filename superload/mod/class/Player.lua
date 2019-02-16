@@ -236,20 +236,30 @@ local function SAI_beginRest()
 end
 
 local function checkForDebuffs()
-	if game.player.confused == 1 then
-		return game.player:tryStop("DEBUFF_CONFUSED", "#RED#AI Stopped: Player is Confused!")
+	if game.player:checkStop("DEBUFF_CONFUSED",
+		game.player.confused == 1,
+		"#RED#AI Stopped: Player is Confused!") then
+		return true
 	end
-	if game.player.dazed == 1 then
-		return game.player:tryStop("DEBUFF_DAZED", "#RED#AI Stopped: Player is Dazed!")
+	if game.player:checkStop("DEBUFF_DAZED",
+		game.player.dazed == 1,
+		"#RED#AI Stopped: Player is Dazed!") then
+		return true
 	end
-	if game.player.stunned == 1 then
-		return game.player:tryStop("DEBUFF_STUNNED", "#RED#AI Stopped: Player is Stunned!")
+	if game.player:checkStop("DEBUFF_STUNNED",
+		game.player.stunned == 1,
+		"#RED#AI Stopped: Player is Stunned!") then
+		return true
 	end
-	if game.player.frozen == 1 then
-		return game.player:tryStop("DEBUFF_FROZEN", "#RED#AI Stopped: Player is Frozen!")
+	if game.player:checkStop("DEBUFF_FROZEN",
+		game.player.frozen == 1,
+		"#RED#AI Stopped: Player is Frozen!") then
+		return true
 	end
-	if game.player.sleep == 1 and not game.player.lucid_dreamer == 1 then
-		return game.player:tryStop("DEBUFF_ASLEEP", "#RED#AI Stopped: Player is Asleep!")
+	if game.player:checkStop("DEBUFF_ASLEEP",
+		game.player.sleep == 1 and not game.player.lucid_dreamer == 1,
+		"#RED#AI Stopped: Player is Asleep!") then
+		return true
 	end
 	return false
 end
