@@ -549,7 +549,7 @@ function skoobot_act(noAction)
 				game:unregisterDialog(game.dialogs[#game.dialogs])
 			end
 		else
-			aiStop("#RED# Ai Stopped: Dialog shown on screen: "..game.dialogs[#game.dialogs].title)
+			return aiStop("#RED# Ai Stopped: Dialog shown on screen: "..game.dialogs[#game.dialogs].title)
 		end
 	end
 	
