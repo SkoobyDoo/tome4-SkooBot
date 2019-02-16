@@ -70,7 +70,7 @@ _M.skoobot.tempLoopInit = function()
 	end
 	if (loop.delta < 0) and ( abs(loop.delta) / game.player.max_life >= checkConfig("LOWHEALTH_RATIO") / 2) then
 		print("#RED#[Skoobot] [Survival] AI Stopped: Lost more than "..math.floor(100*checkConfig("LOWHEALTH_RATIO")/2).."% life in one turn!")
-		return aiStop("#RED#AI Stopped: Lost more than "..math.floor(100*checkConfig("LOWHEALTH_RATIO")/2).."%% life in one turn!")
+		if game.player:tryStop("LIFE_BIGLOSS", "#RED#AI Stopped: Lost more than "..math.floor(100*checkConfig("LOWHEALTH_RATIO")/2).."%% life in one turn!") then return end
 	end
 	return loop
 end
@@ -97,6 +97,77 @@ function aiStop(msg)
 	_M.skoobot.tempLoop = nil
 	_M.skoobot.tempPrevLoop = nil
     game.log((msg ~= nil and msg) or "#LIGHT_RED#AI Stopping!")
+end
+
+_M.checkStop = function(self, stopcategory, condition, msg)
+--check condition (==true) to see if bot should stop.
+--will check stoptype config to see if it is a WARN stoptype
+--for warn stoptypes, will set flag if true, clear if false
+	local stoptype = self:getStopCondition(stopcategory).stoptype
+	
+	if stoptype == "WARN" then
+		if condition then
+			-- make sure the warn memory object exists
+			if not self.skoobotstopwarn then self.skoobotstopwarn = {} end
+			-- if we've already acknowledged this, no need to stop
+			if self.skoobotstopwarn[stopcategory] and self.skoobotstopwarn[stopcategory] == true then return false end
+			-- new alert, mark that we've seen stopcategory and tryStop
+			self.skoobotstopwarn[stopcategory] = true
+			return self:tryStop(stopcategory, msg)
+		else
+			-- clear old alert, if applicable
+			if self.skoobotstopwarn then self.skoobotstopwarn[stopcategory] = nil end
+			return false
+		end
+	end
+	
+	-- not WARN, just check condition and execute tryStop if needed
+	if condition then return self:tryStop(stopcategory, msg) end
+	return false
+end
+
+_M.tryStop = function(self, stoptype, msg)
+-- tries to stop the bot, returning true. if stoptype is set to IGNORED will disregard and return false
+	--check if stoptype is IGNORED
+	local stoptype = self:getStopCondition(stoptype).stoptype
+	if stoptype == "IGNORE" then print("[Skoobot] [StopConditions] [HIGHLIGHT] Ignoring stop condition: "..stoptype) return false end
+	
+	aiStop(msg)
+	return true
+end
+
+_M.getStopConditionList = function()
+	if not game.player.skoobotstopconditions then game.player.skoobotstopconditions = {
+		{label="Debuff: STUNNED", code="DEBUFF_STUNNED", stoptype="WARN"},
+		{label="Debuff: CONFUSED", code="DEBUFF_CONFUSED", stoptype="WARN"},
+		{label="Debuff: DAZED", code="DEBUFF_DAZED", stoptype="WARN"},
+		{label="Debuff: FROZEN", code="DEBUFF_FROZEN", stoptype="WARN"},
+		{label="Debuff: ASLEEP", code="DEBUFF_ASLEEP", stoptype="WARN"},
+		
+		{label="Life: BIGLOSS", code="LIFE_BIGLOSS", stoptype="WARN"},
+		{label="Life: LOWLIFE", code="LIFE_LOWLIFE", stoptype="STOP"},
+		
+		{label="Dialog: LORE", code="DIALOG_LORE", stoptype="IGNORE"},
+		
+		{label="Power Level: ENEMYCOUNT", code="SCOUTER_ENEMYCOUNT", stoptype="STOP"},
+		{label="Power Level: BIGENEMY", code="SCOUTER_BIGENEMY", stoptype="STOP"},
+		{label="Power Level: STRONGERENEMY", code="SCOUTER_STRONGERENEMY", stoptype="STOP"},
+		{label="Power Level: CROWDPOWER", code="SCOUTER_CROWDPOWER", stoptype="STOP"},
+	} end
+	return game.player.skoobotstopconditions
+end
+
+_M.getStopCondition = function(self, getcode)
+	self:getStopConditionList() -- to ensure list exists
+	for index,v in ipairs(game.player.skoobotstopconditions) do
+		if v.code == getcode then return v, index end
+	end
+	print("[SkooBot] [StopConditions] [ERROR] Attempt to fetch nonexistent stop condition: "..getcode)
+end
+
+_M.setStopCondition = function(self, code, stoptype)
+	local v,index = self:getStopCondition(code)
+	game.player.skoobotstopconditions[index] = {label = v.label, code=code, stoptype=stoptype}
 end
 
 local function getDirNum(src, dst)
@@ -165,24 +236,29 @@ local function SAI_beginRest()
 end
 
 local function checkForDebuffs()
-	if game.player.confused == 1 then
-		aiStop("#RED#AI Stopped: Player is Confused!")
+	if game.player:checkStop("DEBUFF_CONFUSED",
+		game.player.confused == 1,
+		"#RED#AI Stopped: Player is Confused!") then
 		return true
 	end
-	if game.player.dazed == 1 then
-		aiStop("#RED#AI Stopped: Player is Dazed!")
+	if game.player:checkStop("DEBUFF_DAZED",
+		game.player.dazed == 1,
+		"#RED#AI Stopped: Player is Dazed!") then
 		return true
 	end
-	if game.player.stunned == 1 then
-		aiStop("#RED#AI Stopped: Player is Stunned!")
+	if game.player:checkStop("DEBUFF_STUNNED",
+		game.player.stunned == 1,
+		"#RED#AI Stopped: Player is Stunned!") then
 		return true
 	end
-	if game.player.frozen == 1 then
-		aiStop("#RED#AI Stopped: Player is Frozen!")
+	if game.player:checkStop("DEBUFF_FROZEN",
+		game.player.frozen == 1,
+		"#RED#AI Stopped: Player is Frozen!") then
 		return true
 	end
-	if game.player.sleep == 1 and not game.player.lucid_dreamer == 1 then
-		aiStop("#RED#AI Stopped: Player is Asleep!")
+	if game.player:checkStop("DEBUFF_ASLEEP",
+		game.player.sleep == 1 and not game.player.lucid_dreamer == 1,
+		"#RED#AI Stopped: Player is Asleep!") then
 		return true
 	end
 	return false
@@ -424,32 +500,27 @@ function _M:postUseTalent(talent, ret, silent)
     return result
 end
 
-local function lowHealth(enemy)
-    -- TODO make threshold configurable
-    if game.player.life < game.player.max_life * checkConfig("LOWHEALTH_RATIO") then
-        if enemy ~= nil then
-            local dir = game.level.map:compassDirection(enemy.x - game.player.x, enemy.y - game.player.y)
-            local name = enemy.name
-		    return true, ("#RED#AI cancelled for low health while hostile spotted to the %s (%s%s)"):format(dir ~= nil and dir or "???", name, game.level.map:isOnScreen(enemy.x, enemy.y) and "" or " - offscreen")
-		else
-		    return true, "#RED#AI cancelled for low health"
-		end
-    end
-end
-
 local function checkPowerLevel()
 	local myPowerLevel = game.player:evaluatePowerLevel()
-	if _M.skoobot.tempLoop.maxVisibleEnemyPower > checkConfig("MAX_INDIVIDUAL_POWER") then
-		return true,"Max enemy power level too high: ".._M.skoobot.tempLoop.maxVisibleEnemyPower
+	if game.player:checkStop("SCOUTER_BIGENEMY",
+		_M.skoobot.tempLoop.maxVisibleEnemyPower > checkConfig("MAX_INDIVIDUAL_POWER"),
+		"Max enemy power level too high: ".._M.skoobot.tempLoop.maxVisibleEnemyPower) then
+		return true
 	end
-	if _M.skoobot.tempLoop.maxVisibleEnemyPower > myPowerLevel + checkConfig("MAX_DIFF_POWER") then
-		return true,"Max enemy power level too much stronger than player: ".._M.skoobot.tempLoop.maxVisibleEnemyPower.." > "..myPowerLevel
+	if game.player:checkStop("SCOUTER_STRONGERENEMY",
+		_M.skoobot.tempLoop.maxVisibleEnemyPower > myPowerLevel + checkConfig("MAX_DIFF_POWER"),
+		"Max enemy power level too much stronger than player: ".._M.skoobot.tempLoop.maxVisibleEnemyPower.." > "..myPowerLevel) then
+		return true
 	end
-	if _M.skoobot.tempLoop.sumVisibleEnemyPower > checkConfig("MAX_COMBINED_POWER") then
-		return true,"Combined enemy power level too high: ".._M.skoobot.tempLoop.sumVisibleEnemyPower
+	if game.player:checkStop("SCOUTER_CROWDPOWER",
+		_M.skoobot.tempLoop.sumVisibleEnemyPower > checkConfig("MAX_COMBINED_POWER"),
+		"Combined enemy power level too high: ".._M.skoobot.tempLoop.sumVisibleEnemyPower) then
+		return true
 	end
-	if _M.skoobot.tempLoop.enemyCount > checkConfig("MAX_ENEMY_COUNT") then
-		return true,"Too many enemies in sight: ".._M.skoobot.tempLoop.enemyCount
+	if game.player:checkStop("SCOUTER_ENEMYCOUNT",
+		_M.skoobot.tempLoop.enemyCount > checkConfig("MAX_ENEMY_COUNT"),
+		"Too many enemies in sight: ".._M.skoobot.tempLoop.enemyCount) then
+		return true
 	end
 	return false
 end
@@ -498,21 +569,27 @@ function skoobot_act(noAction)
 		initLoopTempVars()
 	end
 	
-	if #game.dialogs > 0 then
-		return aiStop("#RED# Ai Stopped: Dialog shown on screen: "..game.dialogs[#game.dialogs].title)
+	while #game.dialogs > 0 do
+		if string.match(game.dialogs[#game.dialogs].title, "Lore found:") then
+			-- this is a lore dialog, check if player has configured to ignore
+			if game.player:tryStop("DIALOG_LORE","#RED# Ai Stopped: Dialog shown on screen: "..game.dialogs[#game.dialogs].title) then
+				return
+			else
+				game:unregisterDialog(game.dialogs[#game.dialogs])
+			end
+		else
+			return aiStop("#RED# Ai Stopped: Dialog shown on screen: "..game.dialogs[#game.dialogs].title)
+		end
 	end
 	
     local hostiles = spotHostiles(game.player, true)
     if #hostiles > 0 then
-        local low, msg = lowHealth(hostiles[0])
-        if low then return aiStop(msg) end
-        
+        if game.player:checkStop("LIFE_LOWLIFE", game.player.life < game.player.max_life * checkConfig("LOWHEALTH_RATIO"), "#RED#AI cancelled for low health") then return end
         _M.skoobot.tempvals.state = SAI_STATE_FIGHT
     end
 	
-	local vegeta,powermsg = checkPowerLevel()
-	if vegeta then
-		return aiStop("#RED# AI Stopped: "..powermsg)
+	if checkPowerLevel() then
+		return
 	end
 	
 	if checkForDebuffs() then
