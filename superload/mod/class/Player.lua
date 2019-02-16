@@ -99,10 +99,39 @@ function aiStop(msg)
     game.log((msg ~= nil and msg) or "#LIGHT_RED#AI Stopping!")
 end
 
+_M.checkStop = function(self, stopcategory, condition, msg)
+--check condition (==true) to see if bot should stop.
+--will check stoptype config to see if it is a WARN stoptype
+--for warn stoptypes, will set flag if true, clear if false
+	local stoptype = self:getStopCondition(stopcategory).stoptype
+	
+	if stoptype == "WARN" then
+		if condition then
+			-- make sure the warn memory object exists
+			if not self.skoobotstopwarn then self.skoobotstopwarn = {} end
+			-- if we've already acknowledged this, no need to stop
+			if self.skoobotstopwarn[stopcategory] and self.skoobotstopwarn[stopcategory] == true then return false end
+			-- new alert, mark that we've seen stopcategory and tryStop
+			self.skoobotstopwarn[stopcategory] = true
+			return self:tryStop(stopcategory, msg)
+		else
+			-- clear old alert, if applicable
+			if self.skoobotstopwarn then self.skoobotstopwarn[stopcategory] = nil end
+			return false
+		end
+	end
+	
+	-- not WARN, just check condition and execute tryStop if needed
+	if condition then return self:tryStop(stopcategory, msg) end
+	return false
+end
+
 _M.tryStop = function(self, stoptype, msg)
+-- tries to stop the bot, returning true. if stoptype is set to IGNORED will disregard and return false
 	--check if stoptype is IGNORED
 	local stoptype = self:getStopCondition(stoptype).stoptype
 	if stoptype == "IGNORE" then print("[Skoobot] [StopConditions] [HIGHLIGHT] Ignoring stop condition: "..stoptype) return false end
+	
 	aiStop(msg)
 	return true
 end
@@ -466,19 +495,6 @@ function _M:postUseTalent(talent, ret, silent)
     return result
 end
 
-local function lowHealth(enemy)
-    -- TODO make threshold configurable
-    if game.player.life < game.player.max_life * checkConfig("LOWHEALTH_RATIO") then
-        if enemy ~= nil then
-            local dir = game.level.map:compassDirection(enemy.x - game.player.x, enemy.y - game.player.y)
-            local name = enemy.name
-		    return true, ("#RED#AI cancelled for low health while hostile spotted to the %s (%s%s)"):format(dir ~= nil and dir or "???", name, game.level.map:isOnScreen(enemy.x, enemy.y) and "" or " - offscreen")
-		else
-		    return true, "#RED#AI cancelled for low health"
-		end
-    end
-end
-
 local function checkPowerLevel()
 	local myPowerLevel = game.player:evaluatePowerLevel()
 	if _M.skoobot.tempLoop.maxVisibleEnemyPower > checkConfig("MAX_INDIVIDUAL_POWER") then
@@ -555,9 +571,7 @@ function skoobot_act(noAction)
 	
     local hostiles = spotHostiles(game.player, true)
     if #hostiles > 0 then
-        local low, msg = lowHealth(hostiles[0])
-        if low then if game.player:tryStop("LIFE_LOWLIFE", msg) then return end end
-        
+        if game.player:checkStop("LIFE_LOWLIFE", game.player.life < game.player.max_life * checkConfig("LOWHEALTH_RATIO"), "#RED#AI cancelled for low health") then return end
         _M.skoobot.tempvals.state = SAI_STATE_FIGHT
     end
 	
