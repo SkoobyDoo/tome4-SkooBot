@@ -2,7 +2,7 @@ long_name = "SkooBot"
 short_name = "skoobot"
 for_module = "tome"
 version = {1,5,10}
-addon_version = {0,0,5}
+addon_version = {0,0,6}
 weight = 1000
 author = { "SkoobyDoo (theskoobydoo@gmail.com)" }
 description = [[Basic bot designed to automate some of the tedium of starting a new character.
@@ -17,9 +17,13 @@ Hotkey defaults are as follows and can be configured in the options screen:
 * Alt + F1 - Toggle bot
 * Shift + F1 - Disable bot (I recommend holding this when the bot is active as its difficult to press it at a time when the bot will listen)
 * Alt + F2 - Single Step bot - This has the bot perform a single action without fully engaging autopilot. Useful when you want to supervise the bot's behavior. Currently a bit buggy and may not run more than 25 times in a row.
-* Shift + F2 - SkooBot Menu - Currently the only option is to configure talent usage
+* Shift + F2 - SkooBot Menu - Currently the only option is to configure talent usage as well as configure which stop conditions are active
 * Alt + F3 - Query bot - This prompts the bot to declare the next action it would take, but should not perform any action.
 This will probably not even get close to beating the game for you, and will frequently run into situations that it will not be able to act in.
+
+Changes in 0.0.6:
+* Added ability to configure whether or not certain stop conditions actually stop the bot (Can choose IGNORE/WARN/STOP, WARN stops once only.)
+* Adjusted power level calculation to not wildly overstate the effect of crit.
 
 Changes in 0.0.5:
 * Separate UI for configuring combat rotation to let you keep your bar the way you want (Access through Shift+F2)
