@@ -492,17 +492,25 @@ end
 
 local function checkPowerLevel()
 	local myPowerLevel = game.player:evaluatePowerLevel()
-	if _M.skoobot.tempLoop.maxVisibleEnemyPower > checkConfig("MAX_INDIVIDUAL_POWER") then
-		return game.player:tryStop("SCOUTER_BIGENEMY", "Max enemy power level too high: ".._M.skoobot.tempLoop.maxVisibleEnemyPower)
+	if game.player:checkStop("SCOUTER_BIGENEMY",
+		_M.skoobot.tempLoop.maxVisibleEnemyPower > checkConfig("MAX_INDIVIDUAL_POWER"),
+		"Max enemy power level too high: ".._M.skoobot.tempLoop.maxVisibleEnemyPower) then
+		return true
 	end
-	if _M.skoobot.tempLoop.maxVisibleEnemyPower > myPowerLevel + checkConfig("MAX_DIFF_POWER") then
-		return game.player:tryStop("SCOUTER_STRONGERENEMY", "Max enemy power level too much stronger than player: ".._M.skoobot.tempLoop.maxVisibleEnemyPower.." > "..myPowerLevel)
+	if game.player:checkStop("SCOUTER_STRONGERENEMY",
+		_M.skoobot.tempLoop.maxVisibleEnemyPower > myPowerLevel + checkConfig("MAX_DIFF_POWER"),
+		"Max enemy power level too much stronger than player: ".._M.skoobot.tempLoop.maxVisibleEnemyPower.." > "..myPowerLevel) then
+		return true
 	end
-	if _M.skoobot.tempLoop.sumVisibleEnemyPower > checkConfig("MAX_COMBINED_POWER") then
-		return game.player:tryStop("SCOUTER_CROWDPOWER", "Combined enemy power level too high: ".._M.skoobot.tempLoop.sumVisibleEnemyPower)
+	if game.player:checkStop("SCOUTER_CROWDPOWER",
+		_M.skoobot.tempLoop.sumVisibleEnemyPower > checkConfig("MAX_COMBINED_POWER"),
+		"Combined enemy power level too high: ".._M.skoobot.tempLoop.sumVisibleEnemyPower) then
+		return true
 	end
-	if _M.skoobot.tempLoop.enemyCount > checkConfig("MAX_ENEMY_COUNT") then
-		return game.player:tryStop("SCOUTER_ENEMYCOUNT", "Too many enemies in sight: ".._M.skoobot.tempLoop.enemyCount)
+	if game.player:checkStop("SCOUTER_ENEMYCOUNT",
+		_M.skoobot.tempLoop.enemyCount > checkConfig("MAX_ENEMY_COUNT"),
+		"Too many enemies in sight: ".._M.skoobot.tempLoop.enemyCount) then
+		return true
 	end
 	return false
 end
