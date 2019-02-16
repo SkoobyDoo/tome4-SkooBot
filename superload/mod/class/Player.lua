@@ -237,24 +237,19 @@ end
 
 local function checkForDebuffs()
 	if game.player.confused == 1 then
-		game.player:tryStop("DEBUFF_CONFUSED", "#RED#AI Stopped: Player is Confused!")
-		return true
+		return game.player:tryStop("DEBUFF_CONFUSED", "#RED#AI Stopped: Player is Confused!")
 	end
 	if game.player.dazed == 1 then
-		game.player:tryStop("DEBUFF_DAZED", "#RED#AI Stopped: Player is Dazed!")
-		return true
+		return game.player:tryStop("DEBUFF_DAZED", "#RED#AI Stopped: Player is Dazed!")
 	end
 	if game.player.stunned == 1 then
-		game.player:tryStop("DEBUFF_STUNNED", "#RED#AI Stopped: Player is Stunned!")
-		return true
+		return game.player:tryStop("DEBUFF_STUNNED", "#RED#AI Stopped: Player is Stunned!")
 	end
 	if game.player.frozen == 1 then
-		game.player:tryStop("DEBUFF_FROZEN", "#RED#AI Stopped: Player is Frozen!")
-		return true
+		return game.player:tryStop("DEBUFF_FROZEN", "#RED#AI Stopped: Player is Frozen!")
 	end
 	if game.player.sleep == 1 and not game.player.lucid_dreamer == 1 then
-		game.player:tryStop("DEBUFF_ASLEEP", "#RED#AI Stopped: Player is Asleep!")
-		return true
+		return game.player:tryStop("DEBUFF_ASLEEP", "#RED#AI Stopped: Player is Asleep!")
 	end
 	return false
 end
