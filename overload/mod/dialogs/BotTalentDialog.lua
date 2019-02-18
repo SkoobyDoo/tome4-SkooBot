@@ -157,7 +157,7 @@ function _M:generateList()
 		end
 	end
 	for i = #badindexes, 1, -1 do
-		table.remove(self.actor.skoobotautotalents,i)
+		table.remove(self.actor.skoobotautotalents,badindexes[i])
 	end
 	
 	list[#list+1] = {id=#list+1, name="#GOLD#Add a new talent...", desc="Select this option to add a new skill to SkooBot's repertoire.", usetype="", priority="", addnew=true}
