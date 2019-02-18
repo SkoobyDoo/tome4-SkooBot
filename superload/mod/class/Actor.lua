@@ -32,7 +32,6 @@ local _M = loadPrevious(...)
 -------------------------------------------------------
 
 local function offensePowerLevel(power, critChance, critBonus, speed)
-	table.print({power=power, critChance=critChance, critBonus=critBonus, speed=speed, result=(power * (critChance * ((critBonus or 0) + 1.5)) + 1 ) * speed or 1})
 	return (power * (critChance/100 * ((critBonus/100 or 0) + 1.5)) + 1 ) * speed or 1
 end
 
@@ -60,11 +59,8 @@ end
 function _M:evaluatePowerScores()
 	local scores = {}
 	scores.survivalScore = self.life/10 * self.life/self.max_life
-	print("[HIGHLIGHT] Physical score")
 	scores.physScore = offensePowerLevel(self.combat_dam, self.combat_generic_crit or self.combat_physcrit and (self.combat_physcrit+9)/100, self.combat_critical_power or 0,self.combat_physspeed*game.player.global_speed)
-	print("[HIGHLIGHT] Spell score")
 	scores.spellScore = offensePowerLevel(self.combat_spellpower, self.combat_generic_crit or self.combat_spellcrit and (self.combat_spellcrit+4)/100, self.combat_critical_power or 0,self.combat_spellspeed*game.player.global_speed)
-	print("[HIGHLIGHT] Mind score")
 	scores.mindScore = offensePowerLevel(self.combat_mindpower, self.combat_generic_crit or self.combat_mindcrit and (self.combat_mindcrit+4)/100, self.combat_critical_power or 0,self.combat_mindspeed*game.player.global_speed)
 	scores.defenseScore = self.combat_def/2 + self.combat_armor
 	scores.statScore = reduce(self.inc_stats, function(a,b) return a+b end)
