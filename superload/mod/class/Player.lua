@@ -69,7 +69,6 @@ _M.skoobot.tempLoopInit = function()
 		print("[Skoobot] [Survival] Delta detected! = "..loop.delta)
 	end
 	if (loop.delta < 0) and ( abs(loop.delta) / game.player.max_life >= checkConfig("LOWHEALTH_RATIO") / 2) then
-		print("#RED#[Skoobot] [Survival] AI Stopped: Lost more than "..math.floor(100*checkConfig("LOWHEALTH_RATIO")/2).."% life in one turn!")
 		if game.player:tryStop("LIFE_BIGLOSS", "#RED#AI Stopped: Lost more than "..math.floor(100*checkConfig("LOWHEALTH_RATIO")/2).."%% life in one turn!") then return end
 	end
 	return loop
@@ -162,7 +161,7 @@ _M.getStopCondition = function(self, getcode)
 	for index,v in ipairs(game.player.skoobotstopconditions) do
 		if v.code == getcode then return v, index end
 	end
-	print("[SkooBot] [StopConditions] [ERROR] Attempt to fetch nonexistent stop condition: "..getcode)
+	print("[Skoobot] [StopConditions] [ERROR] Attempt to fetch nonexistent stop condition: "..getcode)
 end
 
 _M.setStopCondition = function(self, code, stoptype)
@@ -449,10 +448,6 @@ local function getAvailableTalents(target, talentsToUse)
 	    ty = target.y
 	    target_dist = core.fov.distance(game.player.x, game.player.y, tx, ty)
 	end
-	if(talentsToUse ~= nil) then
-		print("[Skoobot] getting available talents with these to use:")
-		table.print(talentsToUse)
-	end
 	local theseTalents = talentsToUse or getTalents()
 	for i,tid in pairs(theseTalents) do
 		local t = game.player:getTalentFromId(tid)
@@ -460,8 +455,6 @@ local function getAvailableTalents(target, talentsToUse)
 		-- No special check for bolts, etc.
 		local total_range = (game.player:getTalentRange(t) or 0) + (game.player:getTalentRadius(t) or 0)
 		local tg = {type=util.getval(t.direct_hit, game.player, t) and "hit" or "bolt", range=total_range}
-		--print(tid.." tg = ")
-		--table.print(tg)
 		if t.mode == "activated" and not t.no_npc_use and not t.no_dumb_use and
 		   not game.player:isTalentCoolingDown(t) and game.player:preUseTalent(t, true, true) and
 		   (target ~= nil and not game.player:getTalentRequiresTarget(t) or game.player:canProject(tg, tx, ty))
@@ -473,7 +466,6 @@ local function getAvailableTalents(target, talentsToUse)
 		   game.player:preUseTalent(t, true, true)
 		   then
 			avail[#avail+1] = tid
-			print(game.player.name, game.player.uid, "dumb ai talents can activate", t.name, tid)
 		else
 			print("[Skoobot] [AvailableTalentFilter] Excluding talent: "..tid..", cannot be used on "..(target~=nil and target.name or "nil"))
 		end
@@ -717,11 +709,7 @@ function skoobot_act(noAction)
 			for i,enemy in pairs(targets) do
 				print("[Skoobot] [Combat] Target selected: "..enemy.name)
 				local talents = getAvailableTalents(enemy, combatTalents)
-				print("[Skoobot] [Combat] Talents ready to go: ("..#talents..")")
-				table.print(talents)
 				talents = filterFailedTalents(talents)
-				print("[Skoobot] [Combat] Talents after filter: ("..#talents..")")
-				table.print(talents)
 				local tid = talents[1]
 				if tid ~= nil then
 					print("[Skoobot] [Combat] Using talent: "..tid.." on target "..enemy.name)

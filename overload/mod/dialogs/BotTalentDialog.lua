@@ -139,7 +139,6 @@ function _M:generateList()
 	local badindexes = {}
 	for index, info in ipairs(self.actor.skoobotautotalents) do
 		local t = self.actor:getTalentFromId(info.tid)
-		table.print(t)
 		if self.actor.talents[info.tid] then
 			if t.mode ~= "passive" and t.hide ~= "true" then
 				list[#list+1] = {
