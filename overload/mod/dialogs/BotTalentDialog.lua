@@ -68,7 +68,10 @@ function _M:use(item)
 	if item.addnew then
 		local talentlist = {}
 		for tid,_ in pairs(game.player.talents) do
-			talentlist[#talentlist+1] = {name=self.actor:getTalentFromId(tid).name:capitalize(),value=tid}
+			local t = self.actor:getTalentFromId(tid)
+			if t.mode ~= "passive" and t.hide ~= "true" then
+				talentlist[#talentlist+1] = {name=self.actor:getTalentFromId(tid).name:capitalize(),value=tid}
+			end
 		end
 		
 		local d = PickOneDialog.new("Pick a talent to add", talentlist,
