@@ -74,6 +74,8 @@ function _M:use(item)
 			end
 		end
 		
+		table.sort(talentlist,function(a,b) return a.name < b.name end)
+		
 		local d = PickOneDialog.new("Pick a talent to add", talentlist,
 			function(value)
 				self.actor.skoobotautotalents[#self.actor.skoobotautotalents+1] = {tid=value, usetype='', priority=1}
