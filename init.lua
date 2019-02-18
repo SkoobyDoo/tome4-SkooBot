@@ -2,7 +2,7 @@ long_name = "SkooBot"
 short_name = "skoobot"
 for_module = "tome"
 version = {1,5,10}
-addon_version = {0,0,6}
+addon_version = {0,0,7}
 weight = 1000
 author = { "SkoobyDoo (theskoobydoo@gmail.com)" }
 description = [[Basic bot designed to automate some of the tedium of starting a new character.
@@ -21,13 +21,14 @@ Hotkey defaults are as follows and can be configured in the options screen:
 * Alt + F3 - Query bot - This prompts the bot to declare the next action it would take, but should not perform any action.
 This will probably not even get close to beating the game for you, and will frequently run into situations that it will not be able to act in.
 
+Changes in 0.0.7
+* Filtered talent selection dialog to not include passive or hidden talents and also sorted it to make it easier to navigate
+* Fixed a critical issue regarding replacing runes/infusions which were a part of your bot config (could entirely break bot for that character)
+* Fixed an issue with Power level calculation that would break under certain circumstances (most notably dual shields)
+
 Changes in 0.0.6:
 * Added ability to configure whether or not certain stop conditions actually stop the bot (Can choose IGNORE/WARN/STOP, WARN stops once only.)
 * Adjusted power level calculation to not wildly overstate the effect of crit.
-
-Changes in 0.0.5:
-* Separate UI for configuring combat rotation to let you keep your bar the way you want (Access through Shift+F2)
-* Bot will now stop when it detects it has no abilities to use rather than pass turns (Also reminds you to configure talent usage!)
 
 Upcoming Features (in no particular order):
 * Companion addons and an integration with this bot to auto-spend levelup points and optimize equipment so you don't have to
