@@ -138,6 +138,7 @@ function _M:generateList()
 	if not self.actor.skoobotautotalents then self.actor.skoobotautotalents = {} end
 	game.player:pruneAutoTalents()
 	for index, info in ipairs(self.actor.skoobotautotalents) do
+		local t = game.player:getTalentFromId(info.tid)
 		if t.mode ~= "passive" and t.hide ~= "true" then
 			list[#list+1] = {
 				id=#list+1,

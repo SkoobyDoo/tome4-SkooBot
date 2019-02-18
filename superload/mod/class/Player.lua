@@ -578,13 +578,17 @@ function skoobot_act(noAction)
 		initLoopTempVars()
 	end
 	
-	while #game.dialogs > 0 do
+	--while #game.dialogs > 0 do
+	if #game.dialogs > 0 then
 		if string.match(game.dialogs[#game.dialogs].title, "Lore found:") then
 			-- this is a lore dialog, check if player has configured to ignore
 			if game.player:tryStop("DIALOG_LORE","#RED# Ai Stopped: Dialog shown on screen: "..game.dialogs[#game.dialogs].title) then
+				print("[Skoobot] [HIGHLIGHT] tried to stop bot due to presence of dialog:", game.dialogs[#game.dialogs].title)
 				return
 			else
+				print("[Skoobot] [HIGHLIGHT] unregistering dialog:", game.dialogs[#game.dialogs].title)
 				game:unregisterDialog(game.dialogs[#game.dialogs])
+				table.print(game.dialogs)
 			end
 		else
 			return aiStop("#RED# Ai Stopped: Dialog shown on screen: "..game.dialogs[#game.dialogs].title)
