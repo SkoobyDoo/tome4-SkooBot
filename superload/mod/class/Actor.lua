@@ -50,10 +50,10 @@ local function weaponPowerLevels(actor)
 		and (type ~= "offhand" or actor:attr("can_offshoot"))
 		and (type ~= "psionic" or actor:attr("psi_focus_combat")) -- ranged combat
 	
-	if temp.archery then
+	if temp.archery and actor.combat and temp.ammo.combat then
 		attackScores.ranged = actor:combatDamage(actor.combat, nil, temp.ammo.combat)
 	end
-	attackScores.melee = not attackScores.ranged and temp.o and temp.o[1] and temp.o[1].combat.dam or actor:combatDamage(actor.combat)
+	attackScores.melee = not attackScores.ranged and temp.o and temp.o[1] and temp.o[1].combat and temp.o[1].combat.dam or actor:combatDamage(actor.combat)
 	return attackScores
 end
 
@@ -61,11 +61,11 @@ function _M:evaluatePowerScores()
 	local scores = {}
 	scores.survivalScore = self.life/10 * self.life/self.max_life
 	print("[HIGHLIGHT] Physical score")
-	scores.physScore = offensePowerLevel(self.combat_dam, self.combat_generic_crit or self.combat_physcrit and (self.combat_physcrit+9)/100, self.combat_critical_power,self.combat_physspeed*game.player.global_speed)
+	scores.physScore = offensePowerLevel(self.combat_dam, self.combat_generic_crit or self.combat_physcrit and (self.combat_physcrit+9)/100, self.combat_critical_power or 0,self.combat_physspeed*game.player.global_speed)
 	print("[HIGHLIGHT] Spell score")
-	scores.spellScore = offensePowerLevel(self.combat_spellpower, self.combat_generic_crit or self.combat_spellcrit and (self.combat_spellcrit+4)/100, self.combat_critical_power,self.combat_spellspeed*game.player.global_speed)
+	scores.spellScore = offensePowerLevel(self.combat_spellpower, self.combat_generic_crit or self.combat_spellcrit and (self.combat_spellcrit+4)/100, self.combat_critical_power or 0,self.combat_spellspeed*game.player.global_speed)
 	print("[HIGHLIGHT] Mind score")
-	scores.mindScore = offensePowerLevel(self.combat_mindpower, self.combat_generic_crit or self.combat_mindcrit and (self.combat_mindcrit+4)/100, self.combat_critical_power,self.combat_mindspeed*game.player.global_speed)
+	scores.mindScore = offensePowerLevel(self.combat_mindpower, self.combat_generic_crit or self.combat_mindcrit and (self.combat_mindcrit+4)/100, self.combat_critical_power or 0,self.combat_mindspeed*game.player.global_speed)
 	scores.defenseScore = self.combat_def/2 + self.combat_armor
 	scores.statScore = reduce(self.inc_stats, function(a,b) return a+b end)
 	
