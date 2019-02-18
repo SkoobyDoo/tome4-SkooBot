@@ -397,7 +397,7 @@ end
 local function getAutoTalents(usetype)
 --This function should grab the combat talents from skoobotautotalents[] where usetype=usetype
 	local talents = {}
-	pruneAutoTalents()
+	game.player.pruneAutoTalents()
 	if not game.player.skoobot or not game.player.skoobotautotalents then return talents end
 	local tbl = {}
 	for _,v in pairs(game.player.skoobotautotalents) do

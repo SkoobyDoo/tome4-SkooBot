@@ -2,7 +2,7 @@ long_name = "SkooBot"
 short_name = "skoobot"
 for_module = "tome"
 version = {1,5,10}
-addon_version = {0,0,8}
+addon_version = {0,0,9}
 weight = 1000
 author = { "SkoobyDoo (theskoobydoo@gmail.com)" }
 description = [[Basic bot designed to automate some of the tedium of starting a new character.
@@ -21,7 +21,7 @@ Hotkey defaults are as follows and can be configured in the options screen:
 * Alt + F3 - Query bot - This prompts the bot to declare the next action it would take, but should not perform any action.
 This will probably not even get close to beating the game for you, and will frequently run into situations that it will not be able to act in.
 
-Changes in 0.0.8
+Changes in 0.0.9
 * Fix talent configuration bug when a talent (usually inscription) is no longer available.
 
 Changes in 0.0.7
