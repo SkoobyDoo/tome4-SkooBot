@@ -14,6 +14,9 @@ Hotkey defaults are as follows and can be configured in the options screen:
 * Alt + F3 - Query bot - This prompts the bot to declare the next action it would take, but should not perform any action.
 This will probably not even get close to beating the game for you, and will frequently run into situations that it will not be able to act in.
 
+Changes in 0.0.8
+* Fix talent configuration bug when a talent (usually inscription) is no longer available.
+
 Changes in 0.0.7
 * Filtered talent selection dialog to not include passive or hidden talents and also sorted it to make it easier to navigate
 * Fixed a critical issue regarding replacing runes/infusions which were a part of your bot config (could entirely break bot for that character)
