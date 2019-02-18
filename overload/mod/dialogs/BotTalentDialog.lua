@@ -136,28 +136,19 @@ end
 function _M:generateList()
 	local list = {}
 	if not self.actor.skoobotautotalents then self.actor.skoobotautotalents = {} end
-	local badindexes = {}
+	game.player:pruneAutoTalents()
 	for index, info in ipairs(self.actor.skoobotautotalents) do
-		local t = self.actor:getTalentFromId(info.tid)
-		if self.actor.talents[info.tid] then
-			if t.mode ~= "passive" and t.hide ~= "true" then
-				list[#list+1] = {
-					id=#list+1,
-					index=index,
-					name=t.name:capitalize(),
-					tid=info.tid,
-					usetype=info.usetype,
-					priority=info.priority,
-					desc=self.actor:getTalentFullDescription(t)
-				}
-			end
-		else
-			print("[SkooBot] [TalentList] [WARN] Attempt to fetch missing talent: "..info.tid)
-			badindexes[#badindexes+1] = index
+		if t.mode ~= "passive" and t.hide ~= "true" then
+			list[#list+1] = {
+				id=#list+1,
+				index=index,
+				name=t.name:capitalize(),
+				tid=info.tid,
+				usetype=info.usetype,
+				priority=info.priority,
+				desc=self.actor:getTalentFullDescription(t)
+			}
 		end
-	end
-	for i = #badindexes, 1, -1 do
-		table.remove(self.actor.skoobotautotalents,badindexes[i])
 	end
 	
 	list[#list+1] = {id=#list+1, name="#GOLD#Add a new talent...", desc="Select this option to add a new skill to SkooBot's repertoire.", usetype="", priority="", addnew=true}

@@ -397,6 +397,7 @@ end
 local function getAutoTalents(usetype)
 --This function should grab the combat talents from skoobotautotalents[] where usetype=usetype
 	local talents = {}
+	pruneAutoTalents()
 	if not game.player.skoobot or not game.player.skoobotautotalents then return talents end
 	local tbl = {}
 	for _,v in pairs(game.player.skoobotautotalents) do
@@ -410,6 +411,22 @@ local function getAutoTalents(usetype)
 		end
 	end
 	return talents
+end
+
+_M.pruneAutoTalents = function()
+-- this function should remove any autotalents that the player no longer has
+	if not game.player.skoobotautotalents then return end
+	local badindexes = {}
+	for index, info in ipairs(game.player.skoobotautotalents) do
+		local t = game.player:getTalentFromId(info.tid)
+		if not game.player.talents[info.tid] then
+			print("[SkooBot] [TalentList] [WARN] Attempt to fetch missing talent: "..info.tid)
+			badindexes[#badindexes+1] = index
+		end
+	end
+	for i = #badindexes, 1, -1 do
+		table.remove(game.player.skoobotautotalents,badindexes[i])
+	end
 end
 
 local function getCombatTalents()
