@@ -146,7 +146,7 @@ _M.getStopConditionList = function()
 		{label="Life: BIGLOSS", code="LIFE_BIGLOSS", stoptype="WARN"},
 		{label="Life: LOWLIFE", code="LIFE_LOWLIFE", stoptype="STOP"},
 		
-		{label="Dialog: LORE", code="DIALOG_LORE", stoptype="IGNORE"},
+		{label="Dialog: LORE", code="DIALOG_LORE", stoptype="STOP"},
 		
 		{label="Power Level: ENEMYCOUNT", code="SCOUTER_ENEMYCOUNT", stoptype="STOP"},
 		{label="Power Level: BIGENEMY", code="SCOUTER_BIGENEMY", stoptype="STOP"},
