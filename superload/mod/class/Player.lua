@@ -825,19 +825,17 @@ function _M:skoobot_runonce()
 	_M.skoobot.tempvals.runonce = nil
 end
 
-local old_act = _M.act
-function _M:act()
-    local ret = old_act(game.player)
-    if (not game.player.running) and (not game.player.resting) and _M.ai_active then
+_M.playerActions = function()
+	if (not game.player.running) and (not game.player.resting) and _M.ai_active then
 		if not game.player:enoughEnergy() then
 			print("[WARN] [Skoobot] [Bugfix] Player act called with insufficient energy for action. Returning.")
 			return
 		end
-        if game.zone.wilderness then
-            aiStop("#RED#Player AI cancelled by wilderness zone!")
-            return ret
-        end
-        skoobot_act()
+		if game.zone.wilderness then
+			aiStop("#RED#Player AI cancelled by wilderness zone!")
+			return ret
+		end
+		skoobot_act()
 		if _M.skoobot.tempActivation then
 			_M.skoobot.tempActivation.turnCount = _M.skoobot.tempActivation.turnCount + 1
 			print("[Skoobot] Player Act Number ".._M.skoobot.tempActivation.turnCount)
@@ -845,11 +843,26 @@ function _M:act()
 				aiStop("#LIGHT_RED#AI Disabled. AI acted for 1000 turns. Did it get stuck?")
 			end
 		end
-    end
+	end
 	if not _M.ai_active and not _M.skoobot.tempvals.runonce then
 		_M.skoobot.tempActivation = nil
 		_M.skoobot.tempLoop = nil
 		_M.skoobot.tempPrevLoop = nil
+	end
+	if checkConfig("ACTION_DELAY") ~= 0 then
+		_M:act()
+	end
+end
+
+local old_act = _M.act
+function _M:act()
+    local ret = old_act(game.player)
+	if checkConfig("ACTION_DELAY") == 0 then
+		_M:playerActions()
+	else
+		game:registerTimer(checkConfig("ACTION_DELAY"), function()
+			_M:playerActions()
+		end)
 	end
     return ret
 end

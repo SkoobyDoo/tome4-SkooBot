@@ -100,5 +100,7 @@ class:bindHook("GameOptions:generateList", function(self, data)
 			"Pauses the bot when the combined power level of visible enemies is over this amount.")
 		createNumericalOption("MAX_ENEMY_COUNT", "Maximum Enemy Count",
 			"Pauses the bot when this many enemies is spotted.")
+		createNumericalOption("ACTION_DELAY", "Skoobot Action Delay",
+			"Bot will wait this many seconds between each action. THIS IS CURRENTLY A BIT BUGGY AND THE BOT WILL ACT WHEN YOU PRESS BUTTONS OR MOVE YOUR MOUSE IN ADDITION TO AUTOMATICALLY WITH THIS DELAY")
 	end
 end)
