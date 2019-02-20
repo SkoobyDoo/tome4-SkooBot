@@ -2,7 +2,7 @@ long_name = "SkooBot"
 short_name = "skoobot"
 for_module = "tome"
 version = {1,5,10}
-addon_version = {0,0,9}
+addon_version = {0,0,10}
 weight = 1000
 author = { "SkoobyDoo (theskoobydoo@gmail.com)" }
 description = [[Basic bot designed to automate some of the tedium of starting a new character.
@@ -21,17 +21,14 @@ Hotkey defaults are as follows and can be configured in the options screen:
 * Alt + F3 - Query bot - This prompts the bot to declare the next action it would take, but should not perform any action.
 This will probably not even get close to beating the game for you, and will frequently run into situations that it will not be able to act in.
 
+Changes in 0.0.10
+* Fixed lore dialog hiding to not disable tooltips
+* Fixed lua error when mousing over enemies you couldn't see (stealth enemies; player blind)
+* Added ability to configure a delay for the bot to wait before each action. This is currently a bit buggy and occasionally gets stuck or acts extra times (Seems to be tied to moving the mouse..?)
+* the default delay is 0 and when set to zero the bot performs exactly as before (...I think)
+
 Changes in 0.0.9
 * Fix talent configuration bug when a talent (usually inscription) is no longer available.
-
-Changes in 0.0.7
-* Filtered talent selection dialog to not include passive or hidden talents and also sorted it to make it easier to navigate
-* Fixed a critical issue regarding replacing runes/infusions which were a part of your bot config (could entirely break bot for that character)
-* Fixed an issue with Power level calculation that would break under certain circumstances (most notably dual shields)
-
-Changes in 0.0.6:
-* Added ability to configure whether or not certain stop conditions actually stop the bot (Can choose IGNORE/WARN/STOP, WARN stops once only.)
-* Adjusted power level calculation to not wildly overstate the effect of crit.
 
 Upcoming Features (in no particular order):
 * Companion addons and an integration with this bot to auto-spend levelup points and optimize equipment so you don't have to
