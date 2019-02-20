@@ -146,7 +146,7 @@ _M.getStopConditionList = function()
 		{label="Life: BIGLOSS", code="LIFE_BIGLOSS", stoptype="WARN"},
 		{label="Life: LOWLIFE", code="LIFE_LOWLIFE", stoptype="STOP"},
 		
-		{label="Dialog: LORE", code="DIALOG_LORE", stoptype="STOP"},
+		{label="Dialog: LORE", code="DIALOG_LORE", stoptype="IGNORE"},
 		
 		{label="Power Level: ENEMYCOUNT", code="SCOUTER_ENEMYCOUNT", stoptype="STOP"},
 		{label="Power Level: BIGENEMY", code="SCOUTER_BIGENEMY", stoptype="STOP"},
@@ -580,15 +580,14 @@ function skoobot_act(noAction)
 	
 	--while #game.dialogs > 0 do
 	if #game.dialogs > 0 then
-		if string.match(game.dialogs[#game.dialogs].title, "Lore found:") then
+		if string.match(game.dialogs[#game.dialogs].title, "Lore found:") and game.dialogs[#game.dialogs].key.virtuals.EXIT then
 			-- this is a lore dialog, check if player has configured to ignore
 			if game.player:tryStop("DIALOG_LORE","#RED# Ai Stopped: Dialog shown on screen: "..game.dialogs[#game.dialogs].title) then
 				print("[Skoobot] [HIGHLIGHT] tried to stop bot due to presence of dialog:", game.dialogs[#game.dialogs].title)
 				return
 			else
 				print("[Skoobot] [HIGHLIGHT] unregistering dialog:", game.dialogs[#game.dialogs].title)
-				game:unregisterDialog(game.dialogs[#game.dialogs])
-				table.print(game.dialogs)
+				game.dialogs[#game.dialogs].key.virtuals.EXIT()
 			end
 		else
 			return aiStop("#RED# Ai Stopped: Dialog shown on screen: "..game.dialogs[#game.dialogs].title)
