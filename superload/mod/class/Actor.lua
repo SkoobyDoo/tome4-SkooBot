@@ -76,6 +76,7 @@ end
 local old_tooltip = _M.tooltip
 function _M:tooltip(x, y, seen_by)
 	local result = old_tooltip(self, x, y, seen_by)
+	if result == nil then return nil end
 	if core.key.modState("ctrl") then
 		local scores = self:evaluatePowerScores()
 		result:add(true, "#FFD700#Power Level#FFFFFF#: "..string.format("%d",recSum(scores)), {"color", "WHITE"})
