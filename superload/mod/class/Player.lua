@@ -840,7 +840,6 @@ end
 
 _M.playerActions = function()
 	print("[Skoobot] [PlayerActions] [HIGHLIGHT] playerActions() game paused =",game.paused, debug.traceback())
-	game.player.skoobotactiontimer = nil
 	if (not game.player.running) and (not game.player.resting) and _M.ai_active then
 		if not game.player:enoughEnergy() then
 			print("[WARN] [Skoobot] [Bugfix] Player act called with insufficient energy for action.")
@@ -864,11 +863,13 @@ _M.playerActions = function()
 		_M.skoobot.tempLoop = nil
 		_M.skoobot.tempPrevLoop = nil
 	end
+	if game.player:enoughEnergy() and _M.ai_active and _M.skoobot.tempvals.state == SAI_STATE_EXPLORE then
+		skoobot_act(true)
+	end
 end
 
 local old_act = _M.act
 function _M:act()
-	print("[Skoobot] [PlayerAct] [HIGHLIGHT] act() game paused =",game.paused, debug.traceback())
     local ret = old_act(game.player)
 	if (not game.player.running) and (not game.player.resting) and _M.ai_active then
 		if not game.player:enoughEnergy() then
