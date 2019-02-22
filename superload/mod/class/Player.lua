@@ -825,10 +825,23 @@ function _M:skoobot_runonce()
 	_M.skoobot.tempvals.runonce = nil
 end
 
+_M.scheduleAction = function()
+	game.paused = true
+	if not game.player.skoobotactiontimer then
+		game.player.skoobotactiontimer = true
+		game:registerTimer(checkConfig("ACTION_DELAY"), function()
+			_M:playerActions()
+			game.paused = false
+		end)
+	end
+end
+
 _M.playerActions = function()
+	print("[Skoobot] [PlayerActions] [HIGHLIGHT] playerActions() game paused =",game.paused, debug.traceback())
+	game.player.skoobotactiontimer = nil
 	if (not game.player.running) and (not game.player.resting) and _M.ai_active then
 		if not game.player:enoughEnergy() then
-			print("[WARN] [Skoobot] [Bugfix] Player act called with insufficient energy for action. Returning.")
+			print("[WARN] [Skoobot] [Bugfix] Player act called with insufficient energy for action.")
 			return
 		end
 		if game.zone.wilderness then
@@ -838,7 +851,7 @@ _M.playerActions = function()
 		skoobot_act()
 		if _M.skoobot.tempActivation then
 			_M.skoobot.tempActivation.turnCount = _M.skoobot.tempActivation.turnCount + 1
-			print("[Skoobot] Player Act Number ".._M.skoobot.tempActivation.turnCount)
+			print("[Skoobot] That was player Act Number ".._M.skoobot.tempActivation.turnCount)
 			if _M.skoobot.tempActivation.turnCount > 1000 then
 				aiStop("#LIGHT_RED#AI Disabled. AI acted for 1000 turns. Did it get stuck?")
 			end
@@ -849,20 +862,22 @@ _M.playerActions = function()
 		_M.skoobot.tempLoop = nil
 		_M.skoobot.tempPrevLoop = nil
 	end
-	if checkConfig("ACTION_DELAY") ~= 0 then
-		_M:act()
-	end
 end
 
 local old_act = _M.act
 function _M:act()
+	print("[Skoobot] [PlayerAct] [HIGHLIGHT] act() game paused =",game.paused, debug.traceback())
     local ret = old_act(game.player)
-	if checkConfig("ACTION_DELAY") == 0 then
-		_M:playerActions()
-	else
-		game:registerTimer(checkConfig("ACTION_DELAY"), function()
+	if (not game.player.running) and (not game.player.resting) and _M.ai_active then
+		if not game.player:enoughEnergy() then
+			print("[WARN] [Skoobot] [Bugfix] Player act called with insufficient energy for action.")
+			return ret
+		end
+		if checkConfig("ACTION_DELAY") == 0 then
 			_M:playerActions()
-		end)
+		else
+			_M.scheduleAction()
+		end
 	end
     return ret
 end
