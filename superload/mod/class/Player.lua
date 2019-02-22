@@ -179,13 +179,10 @@ end
 
 local function validateRest(turns)
     if not turns or turns == 0 then
+    else
         game.log("#GOLD#AI Turns Rested: "..tostring(turns))
-        -- TODO make sure this doesn't override damage taken
-        _M.skoobot.tempvals.state = SAI_STATE_EXPLORE
-        game.player.resting = nil
-        game.player:act()
-    end
-    -- else do nothing
+	end
+    game.player.skoobot.tempvals.state = SAI_STATE_EXPLORE
 end
 
 local function SAI_useTalent(tid, _a, _b, _c, target)
@@ -221,7 +218,11 @@ local function SAI_beginExplore()
 		return
 	end
 	print("[Skoobot] [Action] Beginning to explore.")
-	game.player:autoExplore()
+	if game.player:autoExplore() then
+		return game.player:act()
+	else
+		return aiStop("#RED#AI Stopped: autoExplore returned false.")
+	end
 end
 
 local function SAI_beginRest()
@@ -230,8 +231,8 @@ local function SAI_beginRest()
 		return false
 	end
 	print("[Skoobot] [Action] Beginning to rest.")
-	game.player:restInit(nil,nil,nil,nil,validateRest)
-	return true
+	game.player:restInit(nil,nil,nil,validateRest)
+	return checkForAdditionalAction()
 end
 
 local function checkForDebuffs()
