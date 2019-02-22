@@ -666,10 +666,11 @@ function skoobot_act(noAction)
             _M.skoobot.tempvals.state = SAI_STATE_REST
             return skoobot_act(true)
         end
-        if game.level.map:checkEntity(game.player.x, game.player.y, engine.Map.TERRAIN, "change_level") then
-            aiStop("#GOLD#AI stopping: level change found")
-        end
-        SAI_beginExplore()
+		if game.level.map:checkEntity(game.player.x, game.player.y, engine.Map.TERRAIN, "change_level") then
+			aiStop("#GOLD#AI stopping: level change found")
+		else
+			SAI_beginExplore()
+		end
         return
         
     elseif _M.skoobot.tempvals.state == SAI_STATE_HUNT then
