@@ -2,7 +2,7 @@ long_name = "SkooBot"
 short_name = "skoobot"
 for_module = "tome"
 version = {1,5,10}
-addon_version = {0,0,10}
+addon_version = {0,0,11}
 weight = 1000
 author = { "SkoobyDoo (theskoobydoo@gmail.com)" }
 description = [[Basic bot designed to automate some of the tedium of starting a new character.
@@ -21,14 +21,14 @@ Hotkey defaults are as follows and can be configured in the options screen:
 * Alt + F3 - Query bot - This prompts the bot to declare the next action it would take, but should not perform any action.
 This will probably not even get close to beating the game for you, and will frequently run into situations that it will not be able to act in.
 
+Changes in 0.0.11
+* Fixed some conditions where the bot would stop running for no good reason.
+
 Changes in 0.0.10
 * Fixed lore dialog hiding to not disable tooltips
 * Fixed lua error when mousing over enemies you couldn't see (stealth enemies; player blind)
 * Added ability to configure a delay for the bot to wait before each action. This is currently a bit buggy and occasionally gets stuck or acts extra times (Seems to be tied to moving the mouse..?)
 * the default delay is 0 and when set to zero the bot performs exactly as before (...I think)
-
-Changes in 0.0.9
-* Fix talent configuration bug when a talent (usually inscription) is no longer available.
 
 Upcoming Features (in no particular order):
 * Companion addons and an integration with this bot to auto-spend levelup points and optimize equipment so you don't have to
