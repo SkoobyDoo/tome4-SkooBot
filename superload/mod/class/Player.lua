@@ -45,6 +45,7 @@ _M.skoobot = {}
 _M.skoobot.tempvals = {}
 _M.skoobot.tempvals.state = SAI_STATE_REST
 _M.skoobot.tempvals.do_nothing = false
+_M.skoobot.tempvals.countSuccessiveAutoExploreActions = 0
 
 -- temporary values that should be recalculated from scratch each time the bot is turned on
 _M.skoobot.tempActivationInit = function()
@@ -220,7 +221,11 @@ local function SAI_beginExplore()
 		game.log("[Skoobot] AI would begin exploring.")
 		return
 	end
+	if _M.skoobot.tempvals.countSuccessiveAutoExploreActions > 100 then
+		return aiStop("#RED#AI Stopped: autoExplore infinite cycle detected.")
+	end
 	print("[Skoobot] [Action] Beginning to explore.")
+	_M.skoobot.tempvals.countSuccessiveAutoExploreActions = _M.skoobot.tempvals.countSuccessiveAutoExploreActions + 1
 	game.player:autoExplore()
 end
 
@@ -631,6 +636,10 @@ function skoobot_act(noAction)
     
     print("[Skoobot] [State] "..aiStateString())
     
+	if _M.skoobot.tempvals.state ~= SAI_STATE_EXPLORE then
+		_M.skoobot.tempvals.countSuccessiveAutoExploreActions = 0
+	end
+
 	if _M.skoobot.tempvals.state == SAI_STATE_STOP then
 		return
     elseif _M.skoobot.tempvals.state == SAI_STATE_REST then
