@@ -1,8 +1,8 @@
 long_name = "SkooBot"
 short_name = "skoobot"
 for_module = "tome"
-version = {1,5,10}
-addon_version = {0,0,11}
+version = {1,6,7}
+addon_version = {0,0,12}
 weight = 1000
 author = { "SkoobyDoo (theskoobydoo@gmail.com)" }
 description = [[Basic bot designed to automate some of the tedium of starting a new character.
@@ -20,6 +20,9 @@ Hotkey defaults are as follows and can be configured in the options screen:
 * Shift + F2 - SkooBot Menu - Currently the only option is to configure talent usage as well as configure which stop conditions are active
 * Alt + F3 - Query bot - This prompts the bot to declare the next action it would take, but should not perform any action.
 This will probably not even get close to beating the game for you, and will frequently run into situations that it will not be able to act in.
+
+Changes in 0.0.12
+* Update version compatibility after verifying functionality in 1.6.7
 
 Changes in 0.0.11
 * Fixed some conditions where the bot would stop running for no good reason.
