@@ -692,17 +692,18 @@ function skoobot_act(noAction)
                 table.insert(targets, enemy)
             end
         end
+        
+		if #targets == 0 then
+			-- no enemies left in sight! fight's over
+			-- TODO OR WE'RE BLIND!!!!!!! this edge case will likely resolve itself once HUNT works.
+			_M.skoobot.tempvals.state = SAI_STATE_REST
+			return skoobot_act(true)
+		end
 		
 		local combatTalents = filterFailedTalents(getCombatTalents())
 		
 		if #combatTalents > 0 then
 			local targets = {getLowestHealthEnemy(targets), getNearestHostile()}
-			if #targets == 0 then
-				-- no enemies left in sight! fight's over
-				-- TODO OR WE'RE BLIND!!!!!!! this edge case will likely resolve itself once HUNT works.
-				_M.skoobot.tempvals.state = SAI_STATE_REST
-				return skoobot_act(true)
-			end
 			
 			if (_M.skoobot.tempLoop.delta < 0) and ( abs(_M.skoobot.tempLoop.delta) / game.player.max_life >= checkConfig("LOWHEALTH_RATIO") / 4) then
 				talents = filterFailedTalents(getSustainTalents())
