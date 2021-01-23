@@ -512,6 +512,8 @@ end
 
 local function checkPowerLevel()
 	local myPowerLevel = game.player:evaluatePowerLevel()
+	-- game.log("#LIGHT_RED# SUM_POWER: "..tostring(_M.skoobot.tempLoop.sumVisibleEnemyPower))
+	
 	if game.player:checkStop("SCOUTER_BIGENEMY",
 		_M.skoobot.tempLoop.maxVisibleEnemyPower > checkConfig("MAX_INDIVIDUAL_POWER"),
 		"Max enemy power level too high: ".._M.skoobot.tempLoop.maxVisibleEnemyPower) then
@@ -599,7 +601,6 @@ function skoobot_act(noAction)
     if #hostiles > 0 then
         if game.player:checkStop("LIFE_LOWLIFE", game.player.life < game.player.max_life * checkConfig("LOWHEALTH_RATIO"), "#RED#AI cancelled for low health") then return end
         _M.skoobot.tempvals.state = SAI_STATE_FIGHT
-    end
 	else
 	    -- if there are no enemies in sight, but there is a chest - go and promt to open it.
 		core.fov.calc_circle(game.player.x, game.player.y, game.level.map.w, game.level.map.h, game.player.sight or 10, function(_, x, y) return game.level.map:opaque(x, y) end, function(_, x, y)
