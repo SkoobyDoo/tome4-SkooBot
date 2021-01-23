@@ -604,9 +604,6 @@ function skoobot_act(noAction)
 	    -- if there are no enemies in sight, but there is a chest - go and promt to open it.
 		core.fov.calc_circle(game.player.x, game.player.y, game.level.map.w, game.level.map.h, game.player.sight or 10, function(_, x, y) return game.level.map:opaque(x, y) end, function(_, x, y)
 			local obj = game.level.map(x, y, game.level.map.TERRAIN)
-			if obj and (obj.name:find("chest", 1, true) ~= nil) then 
-				game.log("TERRAIN FOUND: "..obj.name)
-			end
 			if obj and game.player:canSee(obj) and (obj.name:find("chest", 1, true) ~= nil) and (obj.name:find("opened", 1, true) == nil) then
 				game.log("#LIGHT_RED#TERRAIN FOUND: "..obj.name)
 				-- run to chest
