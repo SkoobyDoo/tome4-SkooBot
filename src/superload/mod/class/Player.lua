@@ -274,6 +274,25 @@ function getUnspentTotal()
 	return game.player.unused_talents + game.player.unused_generics + game.player.unused_talents_types + game.player.unused_stats + game.player.unused_prodigies
 end
 
+local function evaluatePowerLevel(actor)
+	if (actor.rank < 3) then
+	-- common:
+		game.log("#LIGHT_RED# COMMON: "..actor.name..":"..tostring(actor:evaluatePowerLevel()).." ??? "..tostring(actor:evaluatePowerLevel()*checkConfig("NORMAL_POWER_RATIO")))
+		return checkConfig("NORMAL_POWER_RATIO")*actor:evaluatePowerLevel()
+	elseif (actor.rank < 4) then
+	-- elite/rare/unique:
+		game.log("#LIGHT_RED# RARE: "..actor.name..":"..tostring(actor:evaluatePowerLevel()).." ??? "..tostring(actor:evaluatePowerLevel()*checkConfig("ELITES_POWER_RATIO")))
+		return checkConfig("ELITES_POWER_RATIO")*actor:evaluatePowerLevel()
+	else
+	 --boss, elite boss or GOD:
+		game.log("#LIGHT_RED# BOSS: "..actor.name..":"..tostring(actor:evaluatePowerLevel()).." ??? "..tostring(actor:evaluatePowerLevel()*checkConfig("BOSS_POWER_RATIO")))
+		return checkConfig("BOSS_POWER_RATIO")*actor:evaluatePowerLevel()
+	end
+	
+	--WTF IS THAT?
+	return -1
+end
+
 local function spotHostiles(self, actors_only)
 	local seen = {}
 	if not self.x then return seen end
@@ -290,7 +309,7 @@ local function spotHostiles(self, actors_only)
 	game.player.skoobot.tempLoop.maxVisibleEnemyPower = 0
 	game.player.skoobot.tempLoop.enemyCount = #seen
 	for _,a in ipairs(seen) do
-		local power = a.actor:evaluatePowerLevel()
+		local power = evaluatePowerLevel(a.actor)
 		game.player.skoobot.tempLoop.sumVisibleEnemyPower = game.player.skoobot.tempLoop.sumVisibleEnemyPower + power
 		if game.player.skoobot.tempLoop.maxVisibleEnemyPower < power then
 			game.player.skoobot.tempLoop.maxVisibleEnemyPower = power
@@ -333,7 +352,8 @@ local function getPathToAir(self)
 	-- Check for visible monsters, only see LOS actors, so telepathy wont prevent resting
 	core.fov.calc_circle(self.x, self.y, game.level.map.w, game.level.map.h, self.sight or 10, function(_, x, y) return game.level.map:opaque(x, y) end, function(_, x, y)
 		local terrain = game.level.map(x, y, game.level.map.TERRAIN)
-		if not terrain.air_level or terrain.air_level > 0 then
+		game.log("#LIGHT_RED# AIR: "..tostring(terrain.air_level))
+		if (terrain.air_level==nil or terrain.air_level > 0) and self:canMove(x,y,false) then
 		    seen[#seen+1] = {x=x, y=y, terrain=terrain}
 		end
 	end, nil)
@@ -347,10 +367,12 @@ local function getPathToAir(self)
 	        close_coord = coord
 	    end
 	end
-	
+	game.log("#LIGHT_RED# self: "..tostring(self.x)..","..tostring(self.y).." dist:"..min_dist)
 	if close_coord ~= nil then
+		game.log("#LIGHT_RED# close_coord: "..tostring(close_coord.x)..","..tostring(close_coord.y))
     	local a = Astar.new(game.level.map, self)
         local path = a:calc(self.x, self.y, close_coord.x, close_coord.y)
+		game.log("#LIGHT_RED# close_coord: "..tostring(path[1].x)..","..tostring(path[1].y))
 	    return path
 	end
 	return nil
@@ -511,8 +533,9 @@ function _M:postUseTalent(talent, ret, silent)
 end
 
 local function checkPowerLevel()
-	local myPowerLevel = game.player:evaluatePowerLevel()
-	-- game.log("#LIGHT_RED# SUM_POWER: "..tostring(_M.skoobot.tempLoop.sumVisibleEnemyPower))
+	--maybe it should not be linear but for this check it matters we have 100% hp or 51%
+	local myPowerLevel = game.player:evaluatePowerLevel()*(game.player.life / game.player.max_life)
+	game.log("#LIGHT_RED# SUM_POWER: "..tostring(_M.skoobot.tempLoop.sumVisibleEnemyPower).." | OUR POWER LEVEL: "..tostring(myPowerLevel))
 	
 	if game.player:checkStop("SCOUTER_BIGENEMY",
 		_M.skoobot.tempLoop.maxVisibleEnemyPower > checkConfig("MAX_INDIVIDUAL_POWER"),
@@ -525,7 +548,7 @@ local function checkPowerLevel()
 		return true
 	end
 	if game.player:checkStop("SCOUTER_CROWDPOWER",
-		_M.skoobot.tempLoop.sumVisibleEnemyPower > checkConfig("MAX_COMBINED_POWER"),
+		_M.skoobot.tempLoop.sumVisibleEnemyPower > myPowerLevel + checkConfig("MAX_COMBINED_POWER"),
 		"Combined enemy power level too high: ".._M.skoobot.tempLoop.sumVisibleEnemyPower) then
 		return true
 	end
@@ -655,13 +678,17 @@ function skoobot_act(noAction)
 			return aiStop("#RED#AI stopped: Attempting to rest while under half breath!")
 		end
         local terrain = game.level.map(game.player.x, game.player.y, game.level.map.TERRAIN)
-        if terrain.air_level and terrain.air_level < 0 and not game.player.undead == 1 then
+		game.log("#LIGHT_RED# AIR: "..tostring(terrain.air_level))
+        if (terrain.air_level and terrain.air_level < 0) and (not game.player.can_breath) then
             -- run to air
-            local path = getPathToAir(game.player)
-            if path ~= nil then
-                local moved = SAI_movePlayer(path[1].x, path[1].y)
+			game.log("#LIGHT_RED# S ")
+            local path1 = getPathToAir(game.player)
+			local moved = false
+            if path1 ~= nil then
+				game.log("#LIGHT_RED# SS: ")
+                moved = SAI_movePlayer(path1[1].x, path1[1].y)
             end
-            
+            game.log("#LIGHT_RED# SSS: ")
             if not moved and _M.ai_active then
                 return aiStop("#RED#AI stopped: Suffocating, no air in sight!")
 			else
@@ -675,7 +702,7 @@ function skoobot_act(noAction)
 			if #hostiles > 0 then
 				_M.skoobot.tempvals.state = SAI_STATE_FIGHT
 				return skoobot_act(true)
-			else
+			elseif (game.player.life / game.player.max_life <=  checkConfig("IGNORE_DAMAGE_HEALTH_RATIO")) then
 				aiStop("#RED#AI stopped: took damage while exploring!")
 			end
 		end
@@ -684,9 +711,17 @@ function skoobot_act(noAction)
             return skoobot_act(true)
         end
 		if game.level.map:checkEntity(game.player.x, game.player.y, engine.Map.TERRAIN, "change_level") then
-			aiStop("#GOLD#AI stopping: level change found")
+			if (_M.skoobot.tempActivation.turnCount == 0) then 
+			    _M.skoobot.tempActivation.turnCount = 1
+				SAI_beginExplore()
+			else
+			    aiStop("#GOLD#AI stopping: level change found")
+			end
 		else
-			SAI_beginExplore()
+			-- if pinned or dominated (unable to move), this leads to FREEZE
+			if (not game.player:hasEffect(game.player.EFF_PINNED)) then
+				SAI_beginExplore()
+			end
 		end
         return
         
@@ -776,13 +811,18 @@ function skoobot_act(noAction)
 				if not moved and not _M.skoobot.tempvals.do_nothing then
 					--game.log("#RED#[Skoobot] [Combat] Normal movement failed, trying beeline")
 					--moved = game.player:attackOrMoveDir(dir)
-					return aiStop("#RED#[Skoobot] [Combat] [Movement] AI stopped: Movement along path to nearest enemy failed!")
+					if (game.player.life / game.player.max_life <=  checkConfig("IGNORE_DAMAGE_HEALTH_RATIO")) then
+						return aiStop("#RED#[Skoobot] [Combat] [Movement] AI stopped: Movement along path to nearest enemy failed!")
+					else
+						SAI_passTurn()
+						return
+					end
 				end
 				checkForAdditionalAction()
 				return
 			end
 			if not moved then
-				-- Maybe we're pinned and can't move?
+				-- Maybe we're pinned and can't move? BUG SOMEWHERE HERE!
 				SAI_passTurn()
 				return
 			end

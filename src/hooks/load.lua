@@ -13,10 +13,8 @@ class:bindHook("ToME:run", function(self, data)
 		end,
 		DISABLE_SKOOBOT = function()
 		    local Player = require "mod.class.Player"
-			if(Player.ai_active) then
-				game.log("#GOLD#SkooBot Disable requested!")
-				Player.ai_active = false
-			end
+		    game.log("#GOLD#SkooBot STOP requested!")
+			Player.skoobot_stop()
 		end,
 		SKOOBOT_RUNONCE = function()
 		    local Player = require "mod.class.Player"
@@ -92,6 +90,8 @@ class:bindHook("GameOptions:generateList", function(self, data)
 		
 		createNumericalOption("LOWHEALTH_RATIO", "Low Health Ratio",
 			"Bot pauses when under this life percent. Also will pause when losing half this percent life in a single round.")
+		createNumericalOption("IGNORE_DAMAGE_HEALTH_RATIO", "Ignore Damage Health Ratio",
+			"Bot will not pause when bot takes damage while exploring and life is higher than this.")
 		createNumericalOption("MAX_INDIVIDUAL_POWER", "Max enemy power level",
 			"Pauses the bot when an enemy with a power level over this amount is spotted.")
 		createNumericalOption("MAX_DIFF_POWER", "Maximum Individual Enemy Power",
@@ -102,5 +102,11 @@ class:bindHook("GameOptions:generateList", function(self, data)
 			"Pauses the bot when this many enemies is spotted.")
 		createNumericalOption("ACTION_DELAY", "Skoobot Action Delay",
 			"Bot will wait this many seconds between each action. THIS IS CURRENTLY A BIT BUGGY AND THE BOT WILL ACT WHEN YOU PRESS BUTTONS OR MOVE YOUR MOUSE IN ADDITION TO AUTOMATICALLY WITH THIS DELAY")
+		createNumericalOption("NORMAL_POWER_RATIO", "Coefficient to apply to common enemies power ratio",
+			"When calculating power ratio bot will multiply power ratio of common enemies by that coefficient.")
+		createNumericalOption("ELITES_POWER_RATIO", "Coefficient to apply to elites/rares/uniques enemies power ratio",
+			"When calculating power ratio bot will multiply power ratio of elites/rares/uniques enemies by that coefficient.")	
+		createNumericalOption("BOSS_POWER_RATIO", "Coefficient to apply to boss/elite boss/go enemies power ratio",
+			"When calculating power ratio bot will multiply power ratio of elites/rares/uniques enemies by that coefficient.")			
 	end
 end)
