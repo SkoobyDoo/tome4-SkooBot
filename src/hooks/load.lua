@@ -13,8 +13,10 @@ class:bindHook("ToME:run", function(self, data)
 		end,
 		DISABLE_SKOOBOT = function()
 		    local Player = require "mod.class.Player"
-		    game.log("#GOLD#SkooBot STOP requested!")
-			Player.skoobot_stop()
+			if(Player.ai_active) then
+				game.log("#GOLD#SkooBot Disable requested!")
+				Player.ai_active = false
+			end
 		end,
 		SKOOBOT_RUNONCE = function()
 		    local Player = require "mod.class.Player"
